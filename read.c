@@ -16,8 +16,13 @@ top:
   if (feof(fp) /* && fp == stdin */) { printf("Exiting.\n"); exit(0); }
 
   if      (isspace(ch)) goto top;
-  else if (issyntax(ch))s0 = 1;
-  else if (issym(ch))   s0 = 2;
+
+  if (issyntax(ch)) {
+    *token = ch; token++; *token = 0;
+    return;
+  }
+
+  if      (issym(ch))   s0 = 2;
   else if (isdigit(ch)) s0 = 3;
   else                  s0 = 4;
 nextch:
@@ -57,13 +62,17 @@ OBJECT * _read(FILE *fp) {
 
   for (;  ; ) {
     _get_token(fp, token);
+#if DEBUG_TOKEN
+    printf("Token: '%s'\n", token);
+#endif
     if (token_type(token) == T_LPAREN) 
       indent++;
     else if (token_type(token) == T_RPAREN) 
       indent--;
     obj = make_symbol(token);
     token_stack = _cons(obj, token_stack);
-    if (indent == 0) 
+
+    if (token_type(token) != T_QUOTE && indent == 0) 
       break;
   }
 
@@ -72,6 +81,10 @@ OBJECT * _read(FILE *fp) {
            token_stack = _cdr(token_stack)) {
     obj = _car(token_stack);
     switch(token_type(symbol_name(obj))) {
+      case T_QUOTE:
+        obj->type = QUOTE;
+        expr = _cons(obj, expr);
+        break;
       case T_NUMBER: 
         obj = make_number(symbol_name(obj));
         expr = _cons(obj, expr); break;
@@ -93,5 +106,10 @@ OBJECT * _read(FILE *fp) {
       break;
      }
   }
+#ifdef DEBUG
+  printf("Read expression.\n");
+  debugf(expr);
+#endif
   return _car(expr);
 }
+

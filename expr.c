@@ -17,7 +17,7 @@
 
 #define CHECK(test,message)    if (!(test)) { printf("%s:%u -- %s\n", __FILE__, __LINE__, message); abort(); }
 
-enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4 };
+enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, QUOTE = 5 };
 enum { T_LPAREN = 1, T_RPAREN = 2, T_QUOTE = 3, T_NUMBER = 4, T_SYMBOL = 5, T_DOT = 6, T_STRING = 7, T_NIL = 8 };
 
 #define issym(x)  ((x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') || (x == '-') || (x == '*') || (x == '_'))

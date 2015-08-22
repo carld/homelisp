@@ -12,7 +12,10 @@ char * obj_inspector(OBJECT *obj) {
                (void *)obj,obj->value.symbol); break;
   case NUMBER: snprintf(str,255,"[%p, NUMBER %d.%d]",
                (void *)obj,obj->value.number.integer,obj->value.number.fraction); break;
-  case OPERATOR: snprintf(str,255,"[%p, OPERATOR ]", (void*)obj); break;
+  case OPERATOR: snprintf(str,255,"[%p, OPERATOR ]", 
+               (void*)obj); break;
+  case QUOTE:   
+    snprintf(str,255,"[%p, QUOTE]", (void *)obj); break;
   default: abort();
   }
   return str;
@@ -33,7 +36,7 @@ next:
     expr_stack = _cons(exp, expr_stack);
     exp = _car(exp);
     indent++;
-  } else if (object_type(exp) == SYMBOL || object_type(exp) == NUMBER || object_type(exp) == OPERATOR) {
+  } else if (object_type(exp) == SYMBOL || object_type(exp) == NUMBER || object_type(exp) == OPERATOR || object_type(exp) == QUOTE) {
     if (expr_stack != NIL) {
       exp = _cdr(_car(expr_stack));
       expr_stack = _cdr(expr_stack);
@@ -46,3 +49,4 @@ next:
   printf("\n");
 }
 
+#define debugf(x) printf("%s:%d ---\n", __FILE__, __LINE__); debug(x)

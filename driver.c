@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
   environment =  _bind(make_symbol("car"),     make_primitive(prim_car), environment);
   environment =  _bind(make_symbol("cdr"),     make_primitive(prim_cdr), environment);
   environment =  _bind(make_symbol("cons"),    make_primitive(prim_cons), environment);
-  environment =  _bind(make_symbol("reverse"), make_primitive(_reverse), environment);
+  environment =  _bind(make_symbol("reverse"), make_primitive(prim_reverse), environment);
 
   environment =  _bind(make_symbol("+"), make_primitive(prim_add), environment);
   environment =  _bind(make_symbol("-"), make_primitive(prim_subtract), environment);

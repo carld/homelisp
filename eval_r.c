@@ -9,7 +9,13 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
   } else if (object_type(expr) == SYMBOL) {
     return _lookup(expr, environ);
   } else if (object_type(expr) == PAIR) {
-    return _apply(expr, environ);
+    if (strcmp(symbol_name(_car(expr)), "quote")==0) {
+      return _car(_cdr(expr));
+    } else if (strcmp(symbol_name(_car(expr)), "lambda")==0) {
+
+    }else {
+      return _apply( _eval(_car(expr), environ), _evlis(_cdr(expr), environ) );
+    }
   } else {
     ERR(expr);
     abort();
@@ -17,13 +23,12 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
   return NIL;
 }
 
-OBJECT * _apply(OBJECT *expr, OBJECT *environ) {
-  OBJECT *proc = _eval(_car(expr), environ);
+OBJECT * _apply(OBJECT *proc, OBJECT *args) {
   if (object_type(proc) == OPERATOR) {
-    return proc->value.primitive(_evlis(_cdr(expr), environ));
+    return proc->value.primitive(args);
   } else {
-    ERR(expr);
-    abort();
+    printf("Expected primitive, got %d\n", object_type(proc));
+    ERR(proc); ERR(args); abort();
   }
 }
 

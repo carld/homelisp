@@ -19,9 +19,15 @@ OBJECT * prim_cons(OBJECT *obj) { return _cons(_car(obj), _car(_cdr(obj))); }
 
 OBJECT * prim_reverse(OBJECT *exp) {
   OBJECT *revexp = NIL;
+  debugf(exp);
+  exp = _car(exp);
   for ( ; exp != NIL; exp = _cdr(exp)) {
     revexp = _cons(_car(exp), revexp);
   }
   return revexp;
+}
+
+OBJECT * prim_quote(OBJECT *exp) {
+  return _car(_cdr(exp));
 }
 

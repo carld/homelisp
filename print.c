@@ -2,6 +2,8 @@
 void _print(OBJECT *exp) {
   OBJECT *expr_stack  = NIL;
   int indent = 0;
+  printf("Printing...\n");
+  debugf(exp);
 next:
   if (object_type(exp) == PAIR) {
     expr_stack = _cons(exp, expr_stack);

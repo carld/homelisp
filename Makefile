@@ -7,14 +7,18 @@ CFLAGS += -ansi
 CFLAGS += -g
 CFLAGS += -ggdb
 CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE
-CFLAGS += -pg
-CFLAGS += -fprofile-arcs -ftest-coverage #-fomit-frame-pointer
+#CFLAGS += -pg
+CFLAGS += -fomit-frame-pointer
+CFLAGS += -DDEBUG_TOKEN=1
+CFLAGS += -DDEBUG=1
+#CFLAGS += -fprofile-arcs -ftest-coverage
 
-LDFLAGS += -pg
-LDFLAGS += -fprofile-arcs -ftest-coverage
+#LDFLAGS += -pg
+#LDFLAGS += -fprofile-arcs -ftest-coverage
 LDFLAGS += -lgc
 
 all: repl 
+	./lisp-tests.sh
 
 repl: driver.c debug.c expr.c read.c eval_r.c print.c prims.c
 	$(CC) -o $@ $(CFLAGS) driver.c $(LDFLAGS)
