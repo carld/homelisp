@@ -126,10 +126,6 @@ OBJECT * make_primitive(prim_op pp) {
   return obj;
 }
 
-int equal(OBJECT *obj1, OBJECT *obj2) {
-  return 1;
-}
-
 OBJECT * make_symbol(const char *symbol) {
   OBJECT *obj  = _interned_syms;
   char * storage = 0;
@@ -145,10 +141,4 @@ OBJECT * make_symbol(const char *symbol) {
   _interned_syms = _cons(obj, _interned_syms);
   return obj;
 }
-
-/* primitives */
-OBJECT * car(OBJECT *obj)  { return _car(obj); }
-OBJECT * cdr(OBJECT *obj)  { return _cdr(obj); }
-OBJECT * cons(OBJECT *obj) { return _cons(_car(obj), _cdr(obj)); }
-
 

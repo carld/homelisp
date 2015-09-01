@@ -9,8 +9,8 @@ CFLAGS += -ggdb
 CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE
 #CFLAGS += -pg
 CFLAGS += -fomit-frame-pointer
-CFLAGS += -DDEBUG_TOKEN=1
-CFLAGS += -DDEBUG=1
+#CFLAGS += -DDEBUG_TOKEN=1
+#CFLAGS += -DDEBUG=1
 #CFLAGS += -fprofile-arcs -ftest-coverage
 
 #LDFLAGS += -pg

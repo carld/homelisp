@@ -9,11 +9,12 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
   } else if (object_type(expr) == SYMBOL) {
     return _lookup(expr, environ);
   } else if (object_type(expr) == PAIR) {
+
     if (strcmp(symbol_name(_car(expr)), "quote")==0) {
       return _car(_cdr(expr));
     } else if (strcmp(symbol_name(_car(expr)), "lambda")==0) {
 
-    }else {
+    } else {
       return _apply( _eval(_car(expr), environ), _evlis(_cdr(expr), environ) );
     }
   } else {
@@ -36,7 +37,8 @@ OBJECT * _evlis(OBJECT *expr, OBJECT *environ) {
   OBJECT *list = expr;
   for (  ; expr != NIL; expr = _cdr(expr) ) {
     OBJECT *tmp = _car(expr);
-    _rplaca(expr, _eval(tmp, environ));
+    tmp = _eval(tmp, environ);
+    _rplaca(expr, tmp);
   }
   return list;
 }

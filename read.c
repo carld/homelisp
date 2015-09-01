@@ -106,10 +106,6 @@ OBJECT * _read(FILE *fp) {
       break;
      }
   }
-#ifdef DEBUG
-  printf("Read expression.\n");
-  debugf(expr);
-#endif
   return _car(expr);
 }
 
