@@ -1,3 +1,9 @@
+/* the read eval print loop
+ *
+ * copyright (c) 2015 A. Carl Douglas
+ */
+#include <unistd.h>
+
 #include "expr.c"
 #include "debug.c"
 #include "read.c"
@@ -8,6 +14,8 @@
 int main(int argc, char *argv[]) {
 
   OBJECT *environment = NIL;
+
+  OBJECT *port = make_number_i(STDIN_FILENO);
 
   environment =  _bind(make_symbol("car"),     make_primitive(prim_car), environment);
   environment =  _bind(make_symbol("cdr"),     make_primitive(prim_cdr), environment);
@@ -21,7 +29,7 @@ int main(int argc, char *argv[]) {
 
   while(!feof(stdin)) {
 
-    _print(_eval(_read(stdin), environment));
+    _print(_eval(_read(port), environment));
 
   }
 

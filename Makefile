@@ -17,17 +17,17 @@ CFLAGS += -fomit-frame-pointer
 #LDFLAGS += -fprofile-arcs -ftest-coverage
 LDFLAGS += -lgc
 
-all: repl 
+all: repl
 	./lisp-tests.sh
 
-repl: driver.c debug.c expr.c read.c eval_r.c print.c prims.c
-	$(CC) -o $@ $(CFLAGS) driver.c $(LDFLAGS)
+repl: repl.c debug.c expr.c read.c eval_r.c print.c prims.c
+	$(CC) -o $@   $(CFLAGS)   repl.c   $(LDFLAGS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) $<
 
 clean:
-	rm -f *.o *.gcda *.gcno repl
+	rm -fv *.o *.gcda *.gcno repl
 
 .PHONY: clean all test
 

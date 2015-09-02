@@ -1,4 +1,12 @@
 
+/*
+ * These functions print out internals of a symbolic expression.
+ *
+ * The debug function has been highly useful in development,
+ * but is not required as part of the read-eval-print loop.
+ *
+ * copyright (C) 2015 A. Carl Douglas
+ */
 #define ERR(x) printf("%s:%d \n", __FILE__, __LINE__); debug(x);
 
 char * obj_inspector(OBJECT *obj) {
@@ -27,7 +35,7 @@ void indent_print_obj(OBJECT *obj, int indent) {
   printf("%s\n", obj_inspector(obj));
 }
 
-void debug(OBJECT *exp) {
+OBJECT * debug(OBJECT *exp) {
   OBJECT *expr_stack  = NIL;
   int indent = 0;
 next:
@@ -36,17 +44,27 @@ next:
     expr_stack = _cons(exp, expr_stack);
     exp = _car(exp);
     indent++;
-  } else if (object_type(exp) == SYMBOL || object_type(exp) == NUMBER || object_type(exp) == OPERATOR || object_type(exp) == QUOTE) {
+    goto next;
+  } else if (object_type(exp) == SYMBOL 
+          || object_type(exp) == NUMBER 
+          || object_type(exp) == OPERATOR ) {
+
+pop_frame:
     if (expr_stack != NIL) {
       exp = _cdr(_car(expr_stack));
       expr_stack = _cdr(expr_stack);
       indent--;
+      if(exp == NIL)
+        goto pop_frame;
     } else {
       exp = NIL;
     }
   }
   if (exp != NIL) goto next;
+
   printf("\n");
+  return NIL;
 }
 
-#define debugf(x) printf("%s:%d ---\n", __FILE__, __LINE__); debug(x)
+#define debugf(x,m) printf("%s:%d --- %s\n", __FILE__, __LINE__, m); debug(x)
+

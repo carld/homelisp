@@ -1,4 +1,7 @@
-/* symbolic expressions 
+/* reads a symbol expression into an internal representation
+ * what is special about this is that there are no recursive
+ * function calls.
+ *
  * Copyright (C) 2015 A. Carl Douglas
  */
 
@@ -52,13 +55,17 @@ int token_type(const char *tok) {
 }
 
 
-OBJECT * _read(FILE *fp) {
+OBJECT * _read(OBJECT *fd) {
   OBJECT *token_stack = NIL;
   OBJECT *expr_stack  = NIL;
   OBJECT *expr = NIL;
   OBJECT *obj = NIL;
   int indent = 0;
   char token[128];
+
+  FILE *fp = NULL;
+
+  fp = fdopen(integer(fd),"r");
 
   for (;  ; ) {
     _get_token(fp, token);

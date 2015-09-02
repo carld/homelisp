@@ -1,4 +1,7 @@
-
+/* the symbolic expression evaluator
+ *
+ * copyright (C) 2015 A. Carl Douglas
+ */
 OBJECT * _apply(OBJECT *expr, OBJECT *environ);
 OBJECT * _eval(OBJECT *expr, OBJECT *environ);
 OBJECT * _evlis(OBJECT *expr, OBJECT *environ);
@@ -15,7 +18,10 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
     } else if (strcmp(symbol_name(_car(expr)), "lambda")==0) {
 
     } else {
-      return _apply( _eval(_car(expr), environ), _evlis(_cdr(expr), environ) );
+      OBJECT *proc, *args;
+      proc = _eval(_car(expr), environ);
+      args = _evlis(_cdr(expr), environ);
+      return _apply(proc, args);
     }
   } else {
     ERR(expr);

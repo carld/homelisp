@@ -1,8 +1,14 @@
 
-A LisP interpreter I experiment with
+A LisP interpreter I experiment with as an educational exercise.
 
-as an educational exercise
+Implemented in C, attempted to make small and simple, 
+with a goal in mind of porting to assembler.
 
-implemented in C
+Uses the car,cdr terminology we've inherited from the IBM704.
 
+example use:
+
+    ./repl 
+    (+ 1 4)
+    5
 

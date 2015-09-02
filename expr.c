@@ -1,19 +1,15 @@
-/* symbolic expressions 
- * Copyright (C) 2015 A. Carl Douglas
+/* structures and functions for representing symbolic expressions 
+ * a structure that can store either an atomic type:
+ *   a symbol or a number, or the typical Cons cell.
+ *
+ * copyright (C) 2015 A. Carl Douglas 
  */
 
-/*
-<exp> ::= <var>
-        |  (lambda (<var>) <exp>)
-        |  (<exp> <exp>)
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <gc.h>
-#include <dlfcn.h>
-#include <signal.h>
 
 #define CHECK(test,message)    if (!(test)) { printf("%s:%u -- %s\n", __FILE__, __LINE__, message); abort(); }
 
@@ -37,9 +33,9 @@ struct object {
   } value;
 };
 
-OBJECT _NIL; 
-OBJECT _TRUE; 
-OBJECT _FALSE;
+OBJECT _NIL   = { PAIR,   { NULL, NULL } }; 
+OBJECT _TRUE  = { SYMBOL, { "true" } }; 
+OBJECT _FALSE = { SYMBOL, { "false" } };
 
 #define NIL     ((OBJECT *) &_NIL) 
 #define TRUE    ((OBJECT *) &_TRUE)
