@@ -5,24 +5,35 @@
  * Copyright (C) 2015 A. Carl Douglas
  */
 
-/*
-<exp> ::= <var>
-        |  (lambda (<var>) <exp>)
-        |  (<exp> <exp>)
-*/
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-void _get_token(FILE *fp, char *token) {
+int exit_on_eof = 1;
+int reached_end_of_file = 0;
+
+/* return zero if successful */
+int _get_token(FILE *fp, char *token) {
   int s0 = 0, s1 = 0,  ch;
 top:
   ch = fgetc(fp);
+  if (ch == EOF) {
+    /* printf("EOF -- %02d\n", ch);*/
+    if (exit_on_eof == 1)
+    { 
+      printf("Exiting.\n"); 
+      exit(0);
+    }
+    *token = ch; /* EOF */
+    reached_end_of_file = 1;
+    return -1;
+  }
 
-  if (feof(fp) /* && fp == stdin */) { printf("Exiting.\n"); exit(0); }
-
-  if      (isspace(ch)) goto top;
+  if (isspace(ch)) goto top;
 
   if (issyntax(ch)) {
     *token = ch; token++; *token = 0;
-    return;
+    return 0;
   }
 
   if      (issym(ch))   s0 = 2;
@@ -31,6 +42,17 @@ top:
 nextch:
   *token = ch; token++;
   ch = fgetc(fp);
+  if (ch == EOF) {
+    if (exit_on_eof == 1)
+    { 
+      printf("Exiting.\n"); 
+      exit(0);
+    }
+    *token = ch; /* EOF */
+    reached_end_of_file = 1;
+    return -1;
+  }
+
   if      (isspace(ch)) s1 = 0;
   else if (issyntax(ch))s1 = 1;
   else if (issym(ch))   s1 = 2;
@@ -39,6 +61,7 @@ nextch:
   if (s0 == s1) goto nextch;
   ungetc(ch, fp);
   *token = '\0';
+  return 0;
 }
 
 int token_type(const char *tok) {
@@ -51,27 +74,27 @@ int token_type(const char *tok) {
     if (*tok >= '0' && *tok <= '9') return T_NUMBER;
     if (*tok >= 0x21 && *tok <= 0x7e) return T_SYMBOL;
   }
-  return 0;
+  return -1;
 }
 
-
-OBJECT * _read(OBJECT *fd) {
+OBJECT * _read(OBJECT *port) {
   OBJECT *token_stack = NIL;
   OBJECT *expr_stack  = NIL;
   OBJECT *expr = NIL;
   OBJECT *obj = NIL;
+  int err = 0;
   int indent = 0;
   char token[128];
 
-  FILE *fp = NULL;
-
-  fp = fdopen(integer(fd),"r");
+  reached_end_of_file = 0;
 
   for (;  ; ) {
-    _get_token(fp, token);
+    err = _get_token((FILE *)pointer(port), token);
 #if DEBUG_TOKEN
     printf("Token: '%s'\n", token);
 #endif
+    if (err != 0) break;
+
     if (token_type(token) == T_LPAREN) 
       indent++;
     else if (token_type(token) == T_RPAREN) 
@@ -88,14 +111,16 @@ OBJECT * _read(OBJECT *fd) {
            token_stack = _cdr(token_stack)) {
     obj = _car(token_stack);
     switch(token_type(symbol_name(obj))) {
-      case T_QUOTE:
-        obj->type = QUOTE;
-        expr = _cons(obj, expr);
+      case T_DOT: /* dotted pair? */
+        printf("dotted pair not implemented\n");  
         break;
+      case T_QUOTE:
+        /* obj->type = QUOTE;*/
+        expr = _cons(obj, expr); break;
       case T_NUMBER: 
         obj = make_number(symbol_name(obj));
         expr = _cons(obj, expr); break;
-      case T_SYMBOL: 
+      case T_SYMBOL:
         expr = _cons(obj, expr); break;
       case T_RPAREN:
         indent--;
@@ -111,8 +136,8 @@ OBJECT * _read(OBJECT *fd) {
            expr_stack = _cdr(expr_stack);
         }
       break;
-     }
+    }
   }
-  return _car(expr);
+  return expr != NIL ? _car(expr) : NIL;
 }
 

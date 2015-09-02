@@ -1,5 +1,5 @@
 
-A LisP interpreter I experiment with as an educational exercise.
+A LisP interpreter to experiment with as an educational exercise.
 
 Implemented in C, attempted to make small and simple, 
 with a goal in mind of porting to assembler.

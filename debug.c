@@ -11,6 +11,10 @@
 
 char * obj_inspector(OBJECT *obj) {
   char *str = GC_MALLOC(256);
+  if (obj == NIL) {
+    snprintf(str,255,"[%p NIL]", (void *)obj);
+    return str;
+  }
   switch (object_type(obj)){
   case PAIR:   snprintf(str,255,"[%p, CONS %p %p %s] NIL=%p",
                (void *)obj,(void *)_car(obj),(void *)_cdr(obj), 
@@ -40,6 +44,9 @@ OBJECT * debug(OBJECT *exp) {
   int indent = 0;
 next:
   indent_print_obj(exp, indent);
+  if (exp == NIL) 
+    goto pop_frame;
+
   if (object_type(exp) == PAIR) {
     expr_stack = _cons(exp, expr_stack);
     exp = _car(exp);

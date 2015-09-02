@@ -20,7 +20,7 @@ LDFLAGS += -lgc
 all: repl
 	./lisp-tests.sh
 
-repl: repl.c debug.c expr.c read.c eval_r.c print.c prims.c
+repl: repl.c debug.c expr.c read.c eval_r.c print.c prims.c load.c
 	$(CC) -o $@   $(CFLAGS)   repl.c   $(LDFLAGS)
 
 .c.o:

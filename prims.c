@@ -18,10 +18,6 @@ DEFMATH(-,prim_subtract)
 DEFMATH(*,prim_multiply)
 DEFMATH(/,prim_divide)
 
-OBJECT * prim_car(OBJECT *obj)  { return _car(_car(obj)); }
-OBJECT * prim_cdr(OBJECT *obj)  { return _cdr(_car(obj)); }
-OBJECT * prim_cons(OBJECT *obj) { return _cons(_car(obj), _car(_cdr(obj))); }
-
 OBJECT * prim_reverse(OBJECT *exp) {
   OBJECT *revexp = NIL;
   exp = _car(exp);
@@ -29,9 +25,5 @@ OBJECT * prim_reverse(OBJECT *exp) {
     revexp = _cons(_car(exp), revexp);
   }
   return revexp;
-}
-
-OBJECT * prim_quote(OBJECT *exp) {
-  return _car(_cdr(_car(exp)));
 }
 
