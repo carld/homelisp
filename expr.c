@@ -93,7 +93,7 @@ OBJECT * _cons(OBJECT *car, OBJECT *cdr) {
 }
 
 /* in place reverse */
-OBJECT * _reverse(OBJECT *expr) {
+OBJECT * _reverse_in_place(OBJECT *expr) {
   OBJECT *tmp, *revexpr = NIL;
   while (expr != NIL) {
     tmp = _cdr(expr);

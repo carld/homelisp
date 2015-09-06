@@ -37,7 +37,7 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
         for ( ; tmpv != NIL && tmpn != NIL; 
                 tmpv = _cdr(tmpv), tmpn = _cdr(tmpn)) {
           /* note: evaluates the arguments before evaluating the lambda */
-          closure_env = _bind(_car(tmpn), _eval(_car(tmpv), environ), closure_env);
+          closure_env = _bind(_car(tmpn), _eval(_car(tmpv), closure_env), closure_env);
         }
         return _eval(_car(_cdr(_cdr(_car(expr)))), closure_env);
       }
@@ -107,12 +107,12 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
 }
 
 OBJECT * _evlis(OBJECT *expr, OBJECT *environ) {
-  OBJECT *list = expr;
+  OBJECT *list = NIL;
   for (  ; expr != NIL; expr = _cdr(expr) ) {
     OBJECT *tmp = _car(expr);
     tmp = _eval(tmp, environ);
-    _rplaca(expr, tmp);
+    list = _cons(tmp, list);
   }
-  return list;
+  return _reverse_in_place(list);
 }
 

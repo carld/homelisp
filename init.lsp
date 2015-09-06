@@ -35,4 +35,7 @@
   (cond ((eq (caar y) x) (cadar y))
         (true (assoc x (cdr y)))))
 
+(def factorial (x)
+  (cond ((eq x 1) 1)
+        (true (* x (factorial (- x 1))))))
 
