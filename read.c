@@ -28,14 +28,14 @@ top:
     reached_end_of_file = 1;
     return -1;
   }
-  if (comment == 1 && ch == '\n') {
+  if (ch == '\n') {
     comment = 0;
-    goto top;
   }
   if(ch == ';') {
     comment = 1;
-    goto top;
   }
+  if (comment==1)
+   goto top;
 
   if (isspace(ch)) goto top;
 
