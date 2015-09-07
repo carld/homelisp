@@ -58,6 +58,7 @@ run_test '(pair (quote (1)) (quote (2)))'  '((1 2))'
 run_test '(factorial 3)' '6'
 run_test '(factorial 4)' '24'
 run_test '(factorial 10)' '3628800'
+run_test '(list 1 2)' '(1 2)'
 
 # McCarthy Lisp tests
 run_test '(eval (quote (quote 1)) (env))' '1'
