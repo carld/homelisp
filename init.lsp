@@ -1,3 +1,8 @@
+; Lisp functions
+; Includes implementation of eval by McCarthy
+; that came from http://ep.yimg.com/ty/cdn/paulgraham/jmc.lisp
+; and an implementation of reverse that
+; came from http://stackoverflow.com/questions/19529829/how-to-recursively-reverse-a-list-using-only-basic-operations
 
 (def caar (x)
   (car (car x)))
