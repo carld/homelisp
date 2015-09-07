@@ -83,3 +83,17 @@
   (cond ((eq x 1) 1)
         (true (* x (factorial (- x 1))))))
 
+(def map (fn ls)
+  (cond ((eq ls (quote ()))  (quote ()))
+        (true (cons (fn (car ls)) (map fn (cdr ls))))))
+
+(def fibonacci (x)
+  (cond ((eq x 0) 0)
+        ((eq x 1) 1)
+        (true (+ (fibonacci (- x 1))
+                 (fibonacci (- x 2))))))
+
+(def append (x y)
+  (cond ((eq x (quote ())) y)
+        (true (cons (car x) (append (cdr x) y)))))
+

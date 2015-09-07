@@ -79,6 +79,9 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
       return NIL; /* what should binding to the environment return? */
     } else if (strcmp(symbol_name(_car(expr)), "env")==0) {
       return environ;
+    } else if (strcmp(symbol_name(_car(expr)), "lambda")==0) {
+      /* does not evaluate here */
+      return expr;
     }
     else  /* apply */
     {

@@ -65,3 +65,7 @@ run_test '(eval (quote (atom (quote 1))) (env))' 'true'
 run_test '(eval (quote (car (quote (a b c)))) (env))' 'a'
 run_test '(eval (quote (cdr (quote (a b c)))) (env))' '(b c)'
 
+# helper tests
+run_test '(map  (lambda (x) (atom x))   (quote (1 2 (quote ()) 3 4)))' '(true true false true true)'
+run_test '(fibonacci 10)' '55'
+run_test '(append (quote (1 2 3)) (quote (4 5 6)))' '(1 2 3 4 5 6)'
