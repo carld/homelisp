@@ -19,6 +19,7 @@ function run_test {
   printf '%03d  %s  %s  ->  %s \n' "$COUNT" "$RESULT" "$1" "$2"
 }
 
+# Built-in evaluator tests
 run_test '(+ 1 2)' '3'
 run_test '(+ 1 2 (+ 3 2) 2)' '10'
 run_test '(quote sym)' 'sym'
@@ -57,3 +58,10 @@ run_test '(pair (quote (1)) (quote (2)))'  '((1 2))'
 run_test '(factorial 3)' '6'
 run_test '(factorial 4)' '24'
 run_test '(factorial 10)' '3628800'
+
+# McCarthy Lisp tests
+run_test '(eval (quote (quote 1)) (env))' '1'
+run_test '(eval (quote (atom (quote 1))) (env))' 'true'
+run_test '(eval (quote (car (quote (a b c)))) (env))' 'a'
+run_test '(eval (quote (cdr (quote (a b c)))) (env))' '(b c)'
+
