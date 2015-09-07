@@ -69,3 +69,5 @@ run_test '(eval (quote (cdr (quote (a b c)))) (env))' '(b c)'
 run_test '(map  (lambda (x) (atom x))   (quote (1 2 (quote ()) 3 4)))' '(true true false true true)'
 run_test '(fibonacci 10)' '55'
 run_test '(append (quote (1 2 3)) (quote (4 5 6)))' '(1 2 3 4 5 6)'
+run_test '(reverse (quote (1 2 3)))' '(3 2 1)'
+

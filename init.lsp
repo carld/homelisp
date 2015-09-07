@@ -97,3 +97,12 @@
   (cond ((eq x (quote ())) y)
         (true (cons (car x) (append (cdr x) y)))))
 
+(def reverse (ls)
+  (cond
+    ((null? ls) ls)
+    ((null? (cdr ls)) ls)
+    (true
+      (cons (car (reverse (cdr ls)))
+            (reverse (cons (car ls)
+                       (reverse (cdr (reverse (cdr ls))))))))))
+

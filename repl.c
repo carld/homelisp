@@ -17,7 +17,6 @@ int main(int argc, char *argv[]) {
 
   OBJECT *port = make_pointer(stdin);
 
-  environment =  _bind(make_symbol("reverse"), make_primitive(prim_reverse), environment);
   environment =  _bind(make_symbol("print"), make_primitive(_print), environment);
   environment =  _bind(make_symbol("+"), make_primitive(prim_add), environment);
   environment =  _bind(make_symbol("-"), make_primitive(prim_subtract), environment);

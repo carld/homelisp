@@ -18,12 +18,3 @@ DEFMATH(-,prim_subtract)
 DEFMATH(*,prim_multiply)
 DEFMATH(/,prim_divide)
 
-OBJECT * prim_reverse(OBJECT *exp) {
-  OBJECT *revexp = NIL;
-  exp = _car(exp);
-  for ( ; exp != NIL; exp = _cdr(exp)) {
-    revexp = _cons(_car(exp), revexp);
-  }
-  return revexp;
-}
-
