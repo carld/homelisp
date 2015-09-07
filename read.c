@@ -21,17 +21,16 @@ top:
     /* printf("EOF -- %02d\n", ch);*/
     if (exit_on_eof == 1)
     { 
+      /* isatty */
       printf("Exiting.\n"); 
       exit(0);
     }
     *token = ch; /* EOF */
     reached_end_of_file = 1;
     return -1;
-  }
-  if (ch == '\n') {
+  } else if (ch == '\n') {
     comment = 0;
-  }
-  if(ch == ';') {
+  } else if(ch == ';') {
     comment = 1;
   }
   if (comment==1)
@@ -108,6 +107,7 @@ OBJECT * _read(OBJECT *port) {
     else if (token_type(token) == T_RPAREN) 
       indent--;
     obj = make_symbol(token);
+
     token_stack = _cons(obj, token_stack);
 
     if (token_type(token) != T_QUOTE && indent == 0) 
@@ -124,7 +124,13 @@ OBJECT * _read(OBJECT *port) {
         break;
       case T_QUOTE:
         /* obj->type = QUOTE;*/
-        expr = _cons(obj, expr); break;
+        /* a 'b c   -> a (quote b) c
+         * a '(b) c -> a (quote (b)) c
+         */
+        obj = expr;
+        expr = _cons(_cons(make_symbol("quote"), obj), _cdr(obj));
+        _rplacd(obj,NIL);
+        break;
       case T_NUMBER: 
         obj = make_number(symbol_name(obj));
         expr = _cons(obj, expr); break;
@@ -133,7 +139,7 @@ OBJECT * _read(OBJECT *port) {
       case T_RPAREN:
         indent--;
         expr_stack = _cons(expr, expr_stack);
-        expr = NIL; 
+        expr = NIL;
       break;
       case T_LPAREN:
         indent++;

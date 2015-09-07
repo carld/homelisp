@@ -51,7 +51,5 @@ pop_frame:
   if (exp != NIL)
     goto next;
 
-  printf("\n");
-
   return NIL;
 }

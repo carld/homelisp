@@ -1,6 +1,6 @@
 /* structures and functions for representing symbolic expressions .
- * a structure that can store either an atomic type:
- *   a symbol or a number, or the typical Cons cell.
+ * an object structure can store either an atomic type:
+ *   a symbol or a number, or a Cons cell.
  *
  * copyright (C) 2015 A. Carl Douglas 
  */
@@ -9,6 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+/*  
+ * For now using the garbage collector shipped with my Operating System:
+ *  man 3 gc
+ *  Boehm, H., and M. Weiser, "Garbage Collection in an Uncooperative Environment", "Software Practice &  Experience",
+ *  September 1988, pp. 807-820.
+ */
 #include <gc.h>
 
 #define CHECK(test,message)    if (!(test)) { printf("%s:%u -- %s\n", __FILE__, __LINE__, message); abort(); }
@@ -20,7 +27,7 @@ enum { T_LPAREN = 1, T_RPAREN = 2, T_QUOTE = 3,
 
 #define issym(x)  ((x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') \
                     || (x == '-') || (x == '*') || (x == '_') \
-                    || (x == '?') || (x == '!'))
+                    || (x == '?') || (x == '!') || (x == '#'))
 
 #define issyntax(x) (x == '(' || x == ')' || x == '.' || x == '\'' || x == '`' || x == ',')
 
@@ -40,8 +47,8 @@ struct object {
 };
 
 OBJECT _NIL   = { PAIR,   { NULL, NULL } }; 
-OBJECT _TRUE  = { SYMBOL, { "true" } }; 
-OBJECT _FALSE = { SYMBOL, { "false" } };
+OBJECT _TRUE  = { SYMBOL, { "#t" } }; 
+OBJECT _FALSE = { SYMBOL, { "#f" } };
 
 #define NIL     ((OBJECT *) &_NIL) 
 #define TRUE    ((OBJECT *) &_TRUE)
@@ -104,12 +111,18 @@ OBJECT * _reverse_in_place(OBJECT *expr) {
   return revexpr;
 }
 
-OBJECT * _lookup(OBJECT *expr, OBJECT *env) {
+/*
+ * (def assoc (x y)
+ *   (cond ((eq (caar y) x) (cadar y))
+ *           (true (assoc x (cdr y)))))
+ */
+OBJECT * _lookup(OBJECT *expr /* x */, OBJECT *env /* y */) {
   for ( ; env != NIL ; env = _cdr(env) ) {
     if (symbol_name(expr) == symbol_name( _car(_car(env)))) {
       return _car(_cdr(_car(env)));
     }
   }
+  printf("Warning: not found -- %s\n",symbol_name(expr));
   return NIL;
 }
 
@@ -136,6 +149,7 @@ OBJECT * make_primitive(prim_op pp) {
   return obj;
 }
 
+/* this helps passing around FILE * etc */
 OBJECT * make_pointer(void * ptr) {
   OBJECT *obj = _object_malloc(POINTER);
   obj->value.ptr = ptr;

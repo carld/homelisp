@@ -7,7 +7,7 @@ with a goal in mind of porting to assembler.
 Uses the car,cdr terminology we've inherited from the IBM704.
 
 
-Installation, build it:
+Installation, build it, run the tests:
 
     make
 
