@@ -20,7 +20,8 @@
 
 #define CHECK(test,message)    if (!(test)) { printf("%s:%u -- %s\n", __FILE__, __LINE__, message); abort(); }
 
-enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, QUOTE = 5, POINTER = 6 };
+enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, QUOTE = 5, POINTER = 6, STRING = 7 };
+
 enum { T_LPAREN = 1, T_RPAREN = 2, T_QUOTE = 3, 
        T_NUMBER = 4, T_SYMBOL = 5, T_DOT = 6, 
        T_STRING = 7, T_NIL = 8, T_SEMI = 9 };
@@ -43,7 +44,9 @@ struct object {
     struct { OBJECT * car; OBJECT * cdr; } pair;
     prim_op primitive;
     void * ptr;
+    char * string;
   } value;
+  size_t size; /* for string length etc */
 };
 
 OBJECT _NIL   = { PAIR,   { NULL, NULL } }; 
@@ -62,6 +65,7 @@ OBJECT *_interned_syms = NIL;
 #define is_atom(x)      (x->type == SYMBOL || x->type == NUMBER)
 #define symbol_name(x)  (x->value.symbol)
 #define integer(x)      (x->value.number.integer)
+#define string(x)       (x->value.string)
 #define pointer(x)      (x->value.ptr)
 #define object_type(x)  (x->type)
 #define _cdr(x)         (x->value.pair.cdr)
@@ -158,17 +162,32 @@ OBJECT * make_pointer(void * ptr) {
 
 OBJECT * make_symbol(const char *symbol) {
   OBJECT *obj  = _interned_syms;
+  size_t len = strlen(symbol) + 1;
   char * storage = 0;
   for (; obj != NIL; obj = _cdr(obj)) {
     if (strcmp(symbol, symbol_name(_car(obj))) == 0) {
       return _car(obj);
     }
   }
-  storage =  GC_MALLOC(strlen(symbol) + 1);
-  memcpy(storage, symbol, strlen(symbol) + 1);
+  storage =  GC_MALLOC(len);
+  memcpy(storage, symbol, len);
   obj =  _object_malloc(SYMBOL);
   obj->value.symbol = storage;
+  obj->size = len;
   _interned_syms = _cons(obj, _interned_syms);
+  return obj;
+}
+
+/* if the length parameter is less than the length of 
+ * the string the actual string length will be used
+ */
+OBJECT * make_string(const char *str, size_t length) {
+  OBJECT *obj = _object_malloc(STRING);
+  size_t len = strlen(str) + 1;
+  if (length > len) len = length;
+  obj->value.string = GC_MALLOC(len + 1);
+  memcpy(obj->value.string, str, len);
+  obj->size = len + 1;
   return obj;
 }
 
@@ -180,5 +199,23 @@ OBJECT *_append(OBJECT *exp1, OBJECT *exp2) {
        ;
   _cdr(tmp) = exp2;
   return exp1;
+}
+
+const char * _strcat_alloc(const char *str1, const char *str2) {
+  /* note strlen excludes the NULL trailing byte */
+  size_t len1 = strlen(str1);
+  size_t len2 = strlen(str2);
+  char * str3 = NULL;
+
+  str3 = GC_MALLOC(len1 + len2 + 1);
+
+  memcpy((void *)str3, (void *)str1, len1);
+  memcpy((void *) (str3+len1), (void *)str2, len2+1);
+ 
+  return str3;
+}
+
+OBJECT * string_cat(OBJECT *obj, const char *str) {
+  return make_string( _strcat_alloc(string(obj), str), 0);
 }
 

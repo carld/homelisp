@@ -10,10 +10,10 @@ function run_test {
   COUNT=$((COUNT + 1))
   RETCODE=$(echo "$1" | $LISP -i init.lsp | grep -c "^$2$")
   if [ $RETCODE = 1 ]; then 
-    RESULT="PASS "
+    RESULT="Pass "
     PASS=$((PASS + 1))
   else  
-    RESULT="FAIL!"
+    RESULT="Fail!"
     FAIL=$((FAIL + 1))
   fi
   printf "%03d  %s  %s  ->  %s \n" "$COUNT" "$RESULT" "$1" "$2"
@@ -73,6 +73,7 @@ run_test "(eval (quote test) (quote ((test #t))) )" "#t"
 run_test "(eval (quote (cond ('t 'hello))) (env))" "hello"
 run_test "(eval '(null? '1) (env))" "#f"
 run_test "(eval (quote (reverse (quote (1 2 3)))) (env))" "(3 2 1)"
+run_test "(eval 'null? (env))" "(lambda (x) (eq x (quote ())))"
 
 # helper tests
 run_test "(map  (lambda (x) (atom x))   (quote (1 2 (quote ()) 3 4)))" "(#t #t #f #t #t)"
@@ -80,4 +81,4 @@ run_test "(fibonacci 10)" "55"
 run_test "(append (quote (1 2 3)) (quote (4 5 6)))" "(1 2 3 4 5 6)"
 run_test "(reverse (quote (1 2 3)))" "(3 2 1)"
 
-printf "\nPASSED: %d / %d \nFAILED: %d / %d\n" "$PASS" "$COUNT" "$FAIL" "$COUNT"
+printf "\nPassed: %d / %d \nFailed: %d / %d\n" "$PASS" "$COUNT" "$FAIL" "$COUNT"

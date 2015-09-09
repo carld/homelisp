@@ -14,6 +14,8 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
 
   if (object_type(expr) == NUMBER) {
     return expr;
+  } else if (object_type(expr) == STRING) {
+    return expr;
   } else if (object_type(expr) == SYMBOL) {
     /*  ((atom e) (assoc e a))  */
     /* this evaluator has built-in true and false
@@ -62,16 +64,13 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
         return TRUE;
       return FALSE;
     } else if (strcmp(symbol_name(_car(expr)), "car")==0) {
-      OBJECT *tmp = _eval(_car(_cdr(expr)), environ);  
-      return _car(tmp);
+      return _car(_eval(_car(_cdr(expr)), environ));
     } else if (strcmp(symbol_name(_car(expr)), "cdr")==0) {
-      OBJECT *tmp = _eval(_car(_cdr(expr)), environ);  
-      return _cdr(tmp);
+      return _cdr(_eval(_car(_cdr(expr)), environ));
     } else if (strcmp(symbol_name(_car(expr)), "cons")==0) {
       OBJECT *o1 = _eval(_car(_cdr(expr)), environ);
       OBJECT *o2 = _eval(_car(_cdr(_cdr(expr))), environ);
-      OBJECT *o3 = _cons(o1, o2);
-      return o3;
+      return _cons(o1, o2);
     } else if (strcmp(symbol_name(_car(expr)), "cond")==0) {
       /* ((eq (car e) 'cond)  (evcon (cdr e) a))
        *
@@ -104,17 +103,11 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
     {
       OBJECT *proc, *args;
       proc = _eval(_car(expr), environ);
-      if (proc == NIL) {
-        printf("Error - symbol not found '%s'\n", symbol_name(_car(expr)));
-        exit(-1);
-      }
-      args = _cdr(expr);
       if (object_type(proc) == OPERATOR) {
-        /* evaluate the arguments */
         args = _evlis(_cdr(expr), environ);
         return proc->value.primitive(args);
       } else if (object_type(proc) == PAIR) {
-        return _eval( _cons(proc, args), environ);
+        return _eval( _cons(proc, _cdr(expr)), environ);
       }
     }
   } /* type == PAIR */

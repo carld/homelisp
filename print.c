@@ -7,10 +7,11 @@
  */
 OBJECT * _print(OBJECT *exp) {
   OBJECT *expr_stack  = NIL;
+  OBJECT *result = make_string("",0);
   int ldepth = 0, depth = 0;
 next:
   if (exp == NIL) {
-    printf("()");
+    result = string_cat(result, "()");
     goto pop_frame;
   }
 
@@ -19,20 +20,27 @@ next:
     exp = _car(exp);
     depth++;
     if (depth > ldepth) {
-      printf("(");
+      result = string_cat(result, "(");
       ldepth++;
     } else {
-      printf(" ");
+      result = string_cat(result, " ");
     }
     goto next;
   }
   
-  if (object_type(exp) == SYMBOL) 
-    printf("%s", exp->value.symbol);
-  else if (object_type(exp) == NUMBER) 
-    printf("%d", exp->value.number.integer);
-  else if (object_type(exp) == OPERATOR)
-    printf("[FUNCTION %p]", (void *)exp);
+  if (object_type(exp) == SYMBOL) {
+    result = string_cat(result, exp->value.symbol);
+  } else if (object_type(exp) == NUMBER)  {
+    char buffer[128];
+    snprintf(buffer, 128, "%d", exp->value.number.integer);
+    result = string_cat(result, buffer);
+  } else if (object_type(exp) == OPERATOR) {
+    char buffer[128];
+    snprintf(buffer, 128, "[FUNCTION %p]", (void *)exp);
+    result = string_cat(result, buffer);
+  } else if (object_type(exp) == STRING) {
+    result = string_cat(result, string(exp));
+  }
 
 pop_frame:
   if (expr_stack != NIL) {
@@ -40,7 +48,7 @@ pop_frame:
     expr_stack = _cdr(expr_stack);
     depth--;
     if(exp == NIL) {
-      printf(")");
+      result = string_cat(result, ")");
       ldepth--;
       goto pop_frame;
     }
@@ -50,6 +58,8 @@ pop_frame:
 
   if (exp != NIL)
     goto next;
+  
+  printf("%s", string(result));
 
-  return NIL;
+  return result;
 }

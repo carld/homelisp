@@ -18,25 +18,16 @@ int _get_token(FILE *fp, char *token) {
 top:
   ch = fgetc(fp);
   if (ch == EOF) {
-    /* printf("EOF -- %02d\n", ch);*/
-    if (exit_on_eof == 1)
-    { 
-      /* isatty */
-      printf("Exiting.\n"); 
-      exit(0);
-    }
-    *token = ch; /* EOF */
-    reached_end_of_file = 1;
-    return -1;
+    goto end_of_file;
   } else if (ch == '\n') {
     comment = 0;
   } else if(ch == ';') {
     comment = 1;
   }
   if (comment==1)
-   goto top;
-
-  if (isspace(ch)) goto top;
+    goto top;
+  if (isspace(ch)) 
+    goto top;
 
   if (issyntax(ch)) {
     *token = ch; token++; *token = 0;
@@ -50,14 +41,7 @@ nextch:
   *token = ch; token++;
   ch = fgetc(fp);
   if (ch == EOF) {
-    if (exit_on_eof == 1)
-    { 
-      printf("Exiting.\n"); 
-      exit(0);
-    }
-    *token = ch; /* EOF */
-    reached_end_of_file = 1;
-    return -1;
+    goto end_of_file;
   }
 
   if      (isspace(ch)) s1 = 0;
@@ -69,6 +53,16 @@ nextch:
   ungetc(ch, fp);
   *token = '\0';
   return 0;
+end_of_file:
+  /* printf("EOF -- %02d\n", ch);*/
+  if (exit_on_eof == 1)
+  { /* isatty? */
+    printf("Exiting.\n"); 
+    exit(0);
+  }
+  *token = ch; /* EOF */
+  reached_end_of_file = 1;
+  return -1;
 }
 
 int token_type(const char *tok) {
@@ -123,7 +117,6 @@ OBJECT * _read(OBJECT *port) {
         printf("dotted pair not implemented\n");  
         break;
       case T_QUOTE:
-        /* obj->type = QUOTE;*/
         /* a 'b c   -> a (quote b) c
          * a '(b) c -> a (quote (b)) c
          */

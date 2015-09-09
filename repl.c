@@ -30,7 +30,6 @@ int main(int argc, char *argv[]) {
   exit_on_eof = 1;
   while(1) {
     _print(_eval(_read(port), environment));
-
     printf("\n");
   }
 

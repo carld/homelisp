@@ -27,9 +27,10 @@ void command_line(int argc, char *argv[], OBJECT *env) {
   int arg;
   for(arg = 1; arg < argc; arg++) {
     if (strcmp(argv[arg],"-i")==0) {
-      if(argv[arg+1] != NULL) {
-        printf("Loading '%s'...\n", argv[arg+1]);
-        load(make_symbol(argv[arg+1]), env);
+      arg++;
+      if(argv[arg] != NULL) {
+        printf("Loading '%s'...\n", argv[arg]);
+        load(make_symbol(argv[arg]), env);
       }
     }
   }
