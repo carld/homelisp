@@ -17,17 +17,22 @@ CFLAGS += -fomit-frame-pointer
 #LDFLAGS += -fprofile-arcs -ftest-coverage
 LDFLAGS += -lgc
 
-all: repl
+all: repl lexer.png
 	./lisp-tests.sh
 
 repl: repl.c debug.c expr.c read.c eval_r.c print.c prims.c load.c
+	wc -l *.c
 	$(CC) -o $@   $(CFLAGS)   repl.c   $(LDFLAGS)
+	size $@
 
 .c.o:
 	$(CC) -c $(CFLAGS) $<
 
 clean:
 	rm -fv *.o *.gcda *.gcno repl
+
+lexer.png: lexer-state.dot
+	dot -Tpng -olexer.png lexer-state.dot
 
 .PHONY: clean all test
 

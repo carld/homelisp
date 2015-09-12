@@ -18,19 +18,7 @@
  */
 #include <gc.h>
 
-#define CHECK(test,message)    if (!(test)) { printf("%s:%u -- %s\n", __FILE__, __LINE__, message); abort(); }
-
-enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, QUOTE = 5, POINTER = 6, STRING = 7 };
-
-enum { T_LPAREN = 1, T_RPAREN = 2, T_QUOTE = 3, 
-       T_NUMBER = 4, T_SYMBOL = 5, T_DOT = 6, 
-       T_STRING = 7, T_NIL = 8, T_SEMI = 9 };
-
-#define issym(x)  ((x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') \
-                    || (x == '-') || (x == '*') || (x == '_') \
-                    || (x == '?') || (x == '!') || (x == '#'))
-
-#define issyntax(x) (x == '(' || x == ')' || x == '.' || x == '\'' || x == '`' || x == ',')
+enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, POINTER = 5, STRING = 6 };
 
 typedef struct object OBJECT;
 
@@ -75,22 +63,13 @@ OBJECT *_interned_syms = NIL;
 
 #define _bind(ex,va,en)    _cons(_cons(ex, _cons(va, NIL)), en)
 
-unsigned _input_size = 1 << 12; /* 4096 */
-char   * _input = (char *)0;
-char   * _token = (char *)0;
-
-FILE *fip = 0;
-
-void _input_malloc () { _input = GC_MALLOC(_input_size); }
-
 OBJECT * _object_malloc (int type)  { 
   OBJECT *obj = GC_MALLOC(sizeof(OBJECT));
   obj->type = type; return obj; 
 }
 
-/* this cons has a feature where if both
- * car and cdr are NIL it returns NIL -
- * cons(NIL,NIL) = ()
+/* this cons has a feature where if both car and cdr are NIL it returns NIL
+ *   cons(NIL,NIL) = ()
  */
 OBJECT * _cons(OBJECT *car, OBJECT *cdr) {
   if (car == NULL && cdr == NULL)
@@ -194,8 +173,7 @@ OBJECT * make_string(const char *str, size_t length) {
 /* warning this mutates it's parameter */
 OBJECT *_append(OBJECT *exp1, OBJECT *exp2) {
   OBJECT *tmp = exp1;
-  for( ; _cdr(tmp) != NIL; 
-         tmp = _cdr(tmp) )
+  for( ; _cdr(tmp) != NIL; tmp = _cdr(tmp) )
        ;
   _cdr(tmp) = exp2;
   return exp1;
@@ -218,4 +196,3 @@ const char * _strcat_alloc(const char *str1, const char *str2) {
 OBJECT * string_cat(OBJECT *obj, const char *str) {
   return make_string( _strcat_alloc(string(obj), str), 0);
 }
-

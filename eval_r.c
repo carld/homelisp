@@ -11,7 +11,6 @@
 OBJECT * _evlis(OBJECT *expr, OBJECT *environ);
 
 OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
-
   if (object_type(expr) == NUMBER) {
     return expr;
   } else if (object_type(expr) == STRING) {

@@ -62,6 +62,7 @@ run_test "(factorial 10)" "3628800"
 run_test "(list 1 2)" "(1 2)"
 run_test "'a" "a"
 run_test "'(a b c)" "(a b c)"
+run_test "\"hello\"" "hello"
 
 # McCarthy Lisp tests
 run_test "(eval (quote (quote 1)) (env))" "1"

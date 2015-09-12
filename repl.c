@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
   environment =  _bind(make_symbol("print"), make_primitive(prim_print), environment);
   environment =  _bind(make_symbol("newline"), make_primitive(prim_newline), environment);
   environment =  _bind(make_symbol("debug"), make_primitive(prim_debug), environment);
+  environment =  _bind(make_symbol("string-append"), make_primitive(prim_string_append), environment);
   environment =  _bind(make_symbol("+"), make_primitive(prim_add), environment);
   environment =  _bind(make_symbol("-"), make_primitive(prim_subtract), environment);
   environment =  _bind(make_symbol("*"), make_primitive(prim_multiply), environment);

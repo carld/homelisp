@@ -40,6 +40,9 @@ next:
     result = string_cat(result, buffer);
   } else if (object_type(exp) == STRING) {
     result = string_cat(result, string(exp));
+  } else {
+    printf("cannot print object (type %d)\n", exp->type);
+    exit(1);
   }
 
 pop_frame:
@@ -60,6 +63,5 @@ pop_frame:
     goto next;
   
   printf("%s", string(result));
-
   return result;
 }

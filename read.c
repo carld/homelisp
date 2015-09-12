@@ -12,70 +12,83 @@
 int exit_on_eof = 1;
 int reached_end_of_file = 0;
 
+enum {T_LPAREN=0,T_RPAREN=1,T_SYMBOL=2,T_NUMBER=3,T_STRING=4,T_QUOTE=5,T_COMMENT=6};
+
 /* return zero if successful */
-int _get_token(FILE *fp, char *token) {
-  int s0 = 0, s1 = 0, ch, comment = 0;
+int get_token(FILE *fp, char *token, int *type) {
+  enum {S_START=0,S_COMMENT=1,S_SYMBOL=2,S_NUMBER=3,S_STRING=4} state = S_START;
+  int ch;
+  *type = -1;
 top:
   ch = fgetc(fp);
   if (ch == EOF) {
-    goto end_of_file;
-  } else if (ch == '\n') {
-    comment = 0;
-  } else if(ch == ';') {
-    comment = 1;
-  }
-  if (comment==1)
-    goto top;
-  if (isspace(ch)) 
-    goto top;
-
-  if (issyntax(ch)) {
-    *token = ch; token++; *token = 0;
-    return 0;
+    reached_end_of_file = 1;
+    if (exit_on_eof == 1)
+    { /* isatty? */
+      printf("Exiting.\n"); 
+      exit(0);
+    }
+    return -1;
   }
 
-  if      (issym(ch))   s0 = 2;
-  else if (isdigit(ch)) s0 = 3;
-  else                  s0 = 4;
-nextch:
-  *token = ch; token++;
-  ch = fgetc(fp);
-  if (ch == EOF) {
-    goto end_of_file;
+  if (state==S_START) {
+    if (isspace(ch)) {
+      /* ignore whitespace */
+    } else if (strchr("()'",ch)) {
+      *token = ch; token++; *token = '\0';
+      if      (ch=='(') *type = T_LPAREN;
+      else if (ch==')') *type = T_RPAREN;
+      else if (ch=='\'') *type = T_QUOTE;
+      return 0;
+    }
+    else if (strchr(";",ch)) {
+      state = S_COMMENT;
+    } else if (strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_:-+=*&^%$#@!~'<>/?`|",ch)) {
+      *token = ch; token++; *token = '\0';
+      state = S_SYMBOL;
+    } else if (strchr("0123456789",ch)) {
+      *token = ch; token++; *token = '\0';
+      state = S_NUMBER;
+    } else if (ch == '"') {
+      *token = ch; token++; *token = '\0';
+      state = S_STRING;
+    } else { 
+      printf("Error, unexpected '%c' in state %d\n", ch, state);
+      exit(1);
+    }
+  } else if (state==S_COMMENT) {
+    if (strchr("\r\n",ch)) {
+      state = S_START;
+    }
+  } else if (state==S_SYMBOL) {
+    if (strchr("()' \t\r\n",ch)) {
+      ungetc(ch,fp);
+      *type = T_SYMBOL;
+      return 0;
+    }
+    *token = ch; token++; *token = '\0';
+  } else if (state==S_NUMBER) {
+    if (strchr("0123456789",ch)==NULL) {
+      ungetc(ch,fp);
+      *type = T_NUMBER;
+      return 0;
+    } 
+    *token = ch; token++; *token = '\0';
+  } else if (state==S_STRING) {
+    *token = ch; token++; *token = '\0';
+    if (ch == '"') {
+      *type = T_STRING;
+      return 0;
+    }
   }
-
-  if      (isspace(ch)) s1 = 0;
-  else if (issyntax(ch))s1 = 1;
-  else if (issym(ch))   s1 = 2;
-  else if (isdigit(ch)) s1 = 3;
-  else                  s1 = 4;
-  if (s0 == s1) goto nextch;
-  ungetc(ch, fp);
-  *token = '\0';
-  return 0;
-end_of_file:
-  /* printf("EOF -- %02d\n", ch);*/
-  if (exit_on_eof == 1)
-  { /* isatty? */
-    printf("Exiting.\n"); 
-    exit(0);
-  }
-  *token = ch; /* EOF */
-  reached_end_of_file = 1;
-  return -1;
+  goto top;
 }
 
-int token_type(const char *tok) {
-  switch (*tok) {
-  case '(': return T_LPAREN;
-  case ')': return T_RPAREN;
-  case '.': return T_DOT;
-  case 0x27: return T_QUOTE;
-  default:
-    if (*tok >= '0' && *tok <= '9') return T_NUMBER;
-    if (*tok >= 0x21 && *tok <= 0x7e) return T_SYMBOL;
-  }
-  return -1;
+char * remove_quotes(char *str) {
+  int len = strlen(str);
+  memmove(str, str+1, len-2);
+  str[len-2] = '\0';
+  return str;
 }
 
 OBJECT * _read(OBJECT *port) {
@@ -85,26 +98,40 @@ OBJECT * _read(OBJECT *port) {
   OBJECT *obj = NIL;
   int err = 0;
   int indent = 0;
-  char token[128];
+  char token[160];
+  int tok_type;
 
   reached_end_of_file = 0;
 
   for (;  ; ) {
-    err = _get_token((FILE *)pointer(port), token);
+    err = get_token((FILE *)pointer(port), token, &tok_type);
 #if DEBUG_TOKEN
-    printf("Token: '%s'\n", token);
+    printf("Token: '%s' type: %d\n", token, tok_type);
 #endif
     if (err != 0) break;
 
-    if (token_type(token) == T_LPAREN) 
+    if (tok_type == T_LPAREN) {
       indent++;
-    else if (token_type(token) == T_RPAREN) 
+      obj = make_symbol(token);
+    } else if (tok_type == T_RPAREN) {
       indent--;
-    obj = make_symbol(token);
+      obj = make_symbol(token);
+    } else if (tok_type == T_STRING) {
+      obj = make_string(remove_quotes(token),0);
+    } else if (tok_type == T_NUMBER) {
+      obj = make_number(token);
+    } else if (tok_type == T_SYMBOL) {
+      obj = make_symbol(token);
+    } else if (tok_type == T_QUOTE) {
+      obj = make_symbol(token);
+    } else {
+      printf("unrecognised token: '%s'\n", token);
+      exit(1);
+    }
 
     token_stack = _cons(obj, token_stack);
 
-    if (token_type(token) != T_QUOTE && indent == 0) 
+    if (tok_type != T_QUOTE && indent == 0)
       break;
   }
 
@@ -112,29 +139,8 @@ OBJECT * _read(OBJECT *port) {
            token_stack != NIL; 
            token_stack = _cdr(token_stack)) {
     obj = _car(token_stack);
-    switch(token_type(symbol_name(obj))) {
-      case T_DOT: /* dotted pair? */
-        printf("dotted pair not implemented\n");  
-        break;
-      case T_QUOTE:
-        /* a 'b c   -> a (quote b) c
-         * a '(b) c -> a (quote (b)) c
-         */
-        obj = expr;
-        expr = _cons(_cons(make_symbol("quote"), obj), _cdr(obj));
-        _rplacd(obj,NIL);
-        break;
-      case T_NUMBER: 
-        obj = make_number(symbol_name(obj));
-        expr = _cons(obj, expr); break;
-      case T_SYMBOL:
-        expr = _cons(obj, expr); break;
-      case T_RPAREN:
-        indent--;
-        expr_stack = _cons(expr, expr_stack);
-        expr = NIL;
-      break;
-      case T_LPAREN:
+    if (obj->type == SYMBOL) {
+      if (strcmp(symbol_name(obj),"(")==0) {
         indent++;
         if (expr_stack == NIL) {
            expr = _cons(expr,NIL);
@@ -142,9 +148,23 @@ OBJECT * _read(OBJECT *port) {
            expr = _cons(expr, _car(expr_stack));
            expr_stack = _cdr(expr_stack);
         }
-      break;
+      } else if (strcmp(symbol_name(obj),")")==0) {
+        expr_stack = _cons(expr, expr_stack);
+        expr = NIL;
+      } else if (strcmp(symbol_name(obj),"'")==0) {
+        /* a 'b c   -> a (quote b) c
+         * a '(b) c -> a (quote (b)) c
+         */
+        obj = expr;
+        expr = _cons(_cons(make_symbol("quote"), obj), _cdr(obj));
+        _rplacd(obj,NIL);
+      } else { /* symbol */
+        expr = _cons(obj, expr);
+      }
+    } else if (obj->type == NUMBER || obj->type == STRING) {
+      expr = _cons(obj, expr);
     }
-  }
+  } /* for */
   return expr != NIL ? _car(expr) : NIL;
 }
 

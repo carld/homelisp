@@ -26,8 +26,6 @@ char * obj_inspector(OBJECT *obj) {
                (void *)obj,obj->value.number.integer,obj->value.number.fraction); break;
   case OPERATOR: snprintf(str,255,"[%p, OPERATOR ]", 
                (void*)obj); break;
-  case QUOTE:   
-    snprintf(str,255,"[%p, QUOTE]", (void *)obj); break;
   default: abort();
   }
   return str;

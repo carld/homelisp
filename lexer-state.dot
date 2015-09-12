@@ -1,0 +1,28 @@
+
+digraph lisp {
+
+  start -> start [label="whitespace"];
+
+  start -> delimiter [label="( ) '"];
+  delimiter -> finish;
+
+  start -> comment [label=";"];
+  comment -> comment [label="anything not \\n"];
+  comment -> finish [label="\\n"];
+
+  start -> symbol [label="A-Z"];
+  symbol -> symbol [label="A-Z"];
+  symbol -> finish [label="whitespace ( ) ;"]
+
+  start -> number [label="0-9"];
+  number -> number [label="0-9"];
+  number -> finish [label="whitespace ( ) ;"];
+
+  start -> string [label="\""];
+  string -> string [label="anything not \\\""];
+  string -> finish [label="\""];
+
+  start -> exit [label="EOF"];
+
+  finish;
+}

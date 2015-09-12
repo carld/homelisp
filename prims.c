@@ -48,3 +48,7 @@ OBJECT * prim_newline(OBJECT *exp) {
   printf("\n");
   return NIL;
 }
+
+OBJECT * prim_string_append(OBJECT *exp) {
+  return string_cat(_car(exp), string(_car(_cdr(exp))));
+}
