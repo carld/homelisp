@@ -63,6 +63,7 @@ run_test "(list 1 2)" "(1 2)"
 run_test "'a" "a"
 run_test "'(a b c)" "(a b c)"
 run_test "\"hello\"" "hello"
+run_test "(string-append \"hello\" \"world\")" "helloworld"
 
 # McCarthy Lisp tests
 run_test "(eval (quote (quote 1)) (env))" "1"
@@ -81,5 +82,6 @@ run_test "(map  (lambda (x) (atom x))   (quote (1 2 (quote ()) 3 4)))" "(#t #t #
 run_test "(fibonacci 10)" "55"
 run_test "(append (quote (1 2 3)) (quote (4 5 6)))" "(1 2 3 4 5 6)"
 run_test "(reverse (quote (1 2 3)))" "(3 2 1)"
+run_test "(string-join '(\"hello\" \"world\" \"!\") \",\")" "hello,world,!"
 
 printf "\nPassed: %d / %d \nFailed: %d / %d\n" "$PASS" "$COUNT" "$FAIL" "$COUNT"

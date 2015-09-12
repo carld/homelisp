@@ -1,25 +1,19 @@
 /* read and evaluate symbolic expressions from the file 
  * in the provided environment
  */
-#include <sys/stat.h>
-#include <fcntl.h>
 OBJECT * load(OBJECT *filename, OBJECT *environ) {
   OBJECT *port;
   FILE *fp;
-
+  int no_exit = 0; /* do not exit on EOF */
   fp = fopen(symbol_name(filename), "r");
-  if (fp == NULL) {
-    return FALSE;
-  }
+  if (fp == NULL) return FALSE;
   port = make_pointer(fp);
 
-  exit_on_eof = 0;
-  while(reached_end_of_file == 0) {
-    OBJECT *exp = _read(port);
+  while(!feof(fp)) {
+    OBJECT *exp = _read(port, no_exit);
     _eval(exp, environ);
   }
   fclose(fp);
-  reached_end_of_file = 0;
   return TRUE;
 }
 

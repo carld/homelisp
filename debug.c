@@ -7,6 +7,7 @@
  *
  * copyright (C) 2015 A. Carl Douglas
  */
+#include<stdio.h>
 #define ERR(x) printf("%s:%d \n", __FILE__, __LINE__); debug(x);
 
 char * obj_inspector(OBJECT *obj) {
@@ -22,6 +23,8 @@ char * obj_inspector(OBJECT *obj) {
                (void *)NIL); break;
   case SYMBOL: snprintf(str,255,"[%p, SYMBOL %s]",
                (void *)obj,obj->value.symbol); break;
+  case STRING: snprintf(str,255,"[%p, STRING %s]",
+               (void *)obj,obj->value.string); break;
   case NUMBER: snprintf(str,255,"[%p, NUMBER %d.%d]",
                (void *)obj,obj->value.number.integer,obj->value.number.fraction); break;
   case OPERATOR: snprintf(str,255,"[%p, OPERATOR ]", 
@@ -52,7 +55,8 @@ next:
     goto next;
   } else if (object_type(exp) == SYMBOL 
           || object_type(exp) == NUMBER 
-          || object_type(exp) == OPERATOR ) {
+          || object_type(exp) == OPERATOR
+          || object_type(exp) == STRING) {
 
 pop_frame:
     if (expr_stack != NIL) {

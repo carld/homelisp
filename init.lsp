@@ -103,3 +103,10 @@
             (reverse (cons (car ls)
                        (reverse (cdr (reverse (cdr ls))))))))))
 
+(def string-join (ls de)
+  (cond
+    ((null? ls) "")
+    (#t (string-append (car ls) 
+                       (cond ((cdr ls) (string-append de (string-join (cdr ls) de)))
+                             (#t ""))))))
+

@@ -1,47 +1,39 @@
 /* reads a symbol expression into an internal representation
- * what is special about this is that there are no recursive
- * function calls.
- *
  * Copyright (C) 2015 A. Carl Douglas
  */
-
-#include <sys/time.h>
-#include <sys/types.h>
+#include <stdio.h>
 #include <unistd.h>
-
-int exit_on_eof = 1;
-int reached_end_of_file = 0;
 
 enum {T_LPAREN=0,T_RPAREN=1,T_SYMBOL=2,T_NUMBER=3,T_STRING=4,T_QUOTE=5,T_COMMENT=6};
 
-/* return zero if successful */
-int get_token(FILE *fp, char *token, int *type) {
+/* returns token type on success, -1 on error or EOF */
+int get_token(FILE *fp, char *token, int exit_on_eof) {
+ /* lexer states and transitions from each state to the
+  * next state are also described in the diagram lexer-state.dot */
   enum {S_START=0,S_COMMENT=1,S_SYMBOL=2,S_NUMBER=3,S_STRING=4} state = S_START;
   int ch;
-  *type = -1;
 top:
   ch = fgetc(fp);
   if (ch == EOF) {
-    reached_end_of_file = 1;
-    if (exit_on_eof == 1)
-    { /* isatty? */
-      printf("Exiting.\n"); 
+    if (exit_on_eof == 1) {
+      printf("Exiting.\n");
       exit(0);
     }
     return -1;
   }
-
   if (state==S_START) {
-    if (isspace(ch)) {
-      /* ignore whitespace */
-    } else if (strchr("()'",ch)) {
+    if (ch==' ' || ch=='\t' || ch=='\n' || ch=='\r') {
+      /* ignore leading whitespace */
+    } else if (ch=='(') {
       *token = ch; token++; *token = '\0';
-      if      (ch=='(') *type = T_LPAREN;
-      else if (ch==')') *type = T_RPAREN;
-      else if (ch=='\'') *type = T_QUOTE;
-      return 0;
-    }
-    else if (strchr(";",ch)) {
+      return T_LPAREN;
+    } else if (ch==')') {
+      *token = ch; token++; *token = '\0';
+      return T_RPAREN;
+    } else if (ch=='\'') {
+      *token = ch; token++; *token = '\0';
+      return T_QUOTE;
+    } else if (strchr(";",ch)) {
       state = S_COMMENT;
     } else if (strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_:-+=*&^%$#@!~'<>/?`|",ch)) {
       *token = ch; token++; *token = '\0';
@@ -63,22 +55,19 @@ top:
   } else if (state==S_SYMBOL) {
     if (strchr("()' \t\r\n",ch)) {
       ungetc(ch,fp);
-      *type = T_SYMBOL;
-      return 0;
+      return T_SYMBOL;
     }
     *token = ch; token++; *token = '\0';
   } else if (state==S_NUMBER) {
     if (strchr("0123456789",ch)==NULL) {
       ungetc(ch,fp);
-      *type = T_NUMBER;
-      return 0;
-    } 
+      return T_NUMBER;
+    }
     *token = ch; token++; *token = '\0';
   } else if (state==S_STRING) {
     *token = ch; token++; *token = '\0';
     if (ch == '"') {
-      *type = T_STRING;
-      return 0;
+      return T_STRING;
     }
   }
   goto top;
@@ -91,24 +80,21 @@ char * remove_quotes(char *str) {
   return str;
 }
 
-OBJECT * _read(OBJECT *port) {
+OBJECT * _read(OBJECT *port, int eof_exit) {
   OBJECT *token_stack = NIL;
   OBJECT *expr_stack  = NIL;
   OBJECT *expr = NIL;
   OBJECT *obj = NIL;
-  int err = 0;
   int indent = 0;
   char token[160];
   int tok_type;
 
-  reached_end_of_file = 0;
-
   for (;  ; ) {
-    err = get_token((FILE *)pointer(port), token, &tok_type);
+    tok_type = get_token((FILE *)pointer(port), token, eof_exit);
 #if DEBUG_TOKEN
     printf("Token: '%s' type: %d\n", token, tok_type);
 #endif
-    if (err != 0) break;
+    if (tok_type < 0) break;
 
     if (tok_type == T_LPAREN) {
       indent++;
@@ -135,13 +121,10 @@ OBJECT * _read(OBJECT *port) {
       break;
   }
 
-  for (    expr = NIL, obj = NIL; 
-           token_stack != NIL; 
-           token_stack = _cdr(token_stack)) {
+  for ( expr = NIL, obj = NIL; token_stack != NIL; token_stack = _cdr(token_stack)) {
     obj = _car(token_stack);
     if (obj->type == SYMBOL) {
       if (strcmp(symbol_name(obj),"(")==0) {
-        indent++;
         if (expr_stack == NIL) {
            expr = _cons(expr,NIL);
         } else {

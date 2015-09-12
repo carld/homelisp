@@ -1,13 +1,9 @@
 /* symbolic expression evaluator
- *
- * needs to implement at least the 
- * following to run the LISP by McCarthy:
- *
+ * needs to implement at least the following to run the LISP by McCarthy:
  *  quote, atom, eq, cons, car, cdr, cond
  *
  * copyright (C) 2015 A. Carl Douglas
  */
-
 OBJECT * _evlis(OBJECT *expr, OBJECT *environ);
 
 OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
@@ -17,20 +13,15 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
     return expr;
   } else if (object_type(expr) == SYMBOL) {
     /*  ((atom e) (assoc e a))  */
-    /* this evaluator has built-in true and false
-     * McCarthy's uses nil or not nil
+    /* this evaluator has built-in true and false, McCarthy's uses nil or not nil
      */
-    if (strcmp(symbol_name(expr),"#t")==0)
-      return TRUE;
-    else if (strcmp(symbol_name(expr),"#f")==0)
-      return FALSE;
+    if (strcmp(symbol_name(expr),"#t")==0) return TRUE;
+    else if (strcmp(symbol_name(expr),"#f")==0) return FALSE;
     return _lookup(expr, environ);
   } else if (object_type(expr) == PAIR) {
-
     if (expr == NIL) /* NIL is a pair: '() */
       return NIL;
-
-    if (object_type(_car(expr)) == PAIR) {
+    else if (object_type(_car(expr)) == PAIR) {
       if (strcmp(symbol_name(_car(_car(expr))),"lambda")==0) {
         OBJECT *tmpn = _car(_cdr(_car(expr)));
         OBJECT *tmpv = _cdr(expr);
@@ -51,10 +42,10 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
       OBJECT *tmp = _eval(_car(_cdr(expr)), environ);
       return is_atom(tmp) ? TRUE : FALSE;      
     } else if (strcmp(symbol_name(_car(expr)), "eq")==0) {
-/*
- *  ((eq (car e) 'eq)    (eq     (eval. (cadr e) a)
- *                               (eval. (caddr e) a)))
- */
+    /*
+     *  ((eq (car e) 'eq)    (eq     (eval. (cadr e) a)
+     *                               (eval. (caddr e) a)))
+     */
       OBJECT *o1 = _eval(_car(_cdr(expr)), environ);
       OBJECT *o2 = _eval(_car(_cdr(_cdr(expr))), environ);
       if (  (object_type(o1)==NUMBER && object_type(o2)==NUMBER && integer(o1)==integer(o2))
@@ -80,8 +71,7 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
       OBJECT *tmp ;
       for (tmp = _cdr(expr); tmp != NIL; tmp = _cdr(tmp)) {
         OBJECT *o1 = _eval(_car(_car(tmp)), environ);
-        /* an atom (sym or number) is true,
-         * to be compatible with McCarthy Lisp */
+        /* an atom (sym or number) is true to be compatible with McCarthy Lisp */
         if (o1 != NIL && o1 != FALSE) o1 = TRUE;
         if (o1 == TRUE) {
           return _eval(_car(_cdr(_car(tmp))), environ);
@@ -100,10 +90,9 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
     }
     else  /* apply? */
     {
-      OBJECT *proc, *args;
-      proc = _eval(_car(expr), environ);
+      OBJECT *proc = _eval(_car(expr), environ);
       if (object_type(proc) == OPERATOR) {
-        args = _evlis(_cdr(expr), environ);
+        OBJECT *args = _evlis(_cdr(expr), environ);
         return proc->value.primitive(args);
       } else if (object_type(proc) == PAIR) {
         return _eval( _cons(proc, _cdr(expr)), environ);

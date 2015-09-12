@@ -1,6 +1,4 @@
-/* built-in functions that can be applied
- * during evaluation of a symbolic expression
- *
+/* built-in functions that can be applied during evaluation of a symbolic expression
  * copyright (c) 2015 A. Carl Douglas
  */
 
@@ -41,7 +39,7 @@ OBJECT * prim_debug(OBJECT *exp) {
 }
 
 OBJECT * prim_read(OBJECT *exp) {
-  return _read(_car(exp));
+  return _read(_car(exp), 1);
 }
 
 OBJECT * prim_newline(OBJECT *exp) {
@@ -50,5 +48,5 @@ OBJECT * prim_newline(OBJECT *exp) {
 }
 
 OBJECT * prim_string_append(OBJECT *exp) {
-  return string_cat(_car(exp), string(_car(_cdr(exp))));
+  return string_cat(_car(exp), _car(_cdr(exp)));
 }

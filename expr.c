@@ -4,12 +4,8 @@
  *
  * copyright (C) 2015 A. Carl Douglas 
  */
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-
 /*  
  * For now using the garbage collector shipped with my Operating System:
  *  man 3 gc
@@ -19,9 +15,7 @@
 #include <gc.h>
 
 enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, POINTER = 5, STRING = 6 };
-
 typedef struct object OBJECT;
-
 typedef OBJECT * (*prim_op) (OBJECT *);
 
 struct object {
@@ -68,18 +62,11 @@ OBJECT * _object_malloc (int type)  {
   obj->type = type; return obj; 
 }
 
-/* this cons has a feature where if both car and cdr are NIL it returns NIL
- *   cons(NIL,NIL) = ()
- */
 OBJECT * _cons(OBJECT *car, OBJECT *cdr) {
-  if (car == NULL && cdr == NULL)
-    return NIL;
-  else {
-    OBJECT *obj = _object_malloc(PAIR);
-    obj->value.pair.car = car;
-    obj->value.pair.cdr = cdr;
-    return obj;
-  }
+  OBJECT *obj = _object_malloc(PAIR);
+  obj->value.pair.car = car;
+  obj->value.pair.cdr = cdr;
+  return obj;
 }
 
 /* in place reverse */
@@ -105,7 +92,6 @@ OBJECT * _lookup(OBJECT *expr /* x */, OBJECT *env /* y */) {
       return _car(_cdr(_car(env)));
     }
   }
-  printf("Warning: not found -- %s\n",symbol_name(expr));
   return NIL;
 }
 
@@ -148,9 +134,9 @@ OBJECT * make_symbol(const char *symbol) {
       return _car(obj);
     }
   }
-  storage =  GC_MALLOC(len);
+  storage = GC_MALLOC(len);
   memcpy(storage, symbol, len);
-  obj =  _object_malloc(SYMBOL);
+  obj = _object_malloc(SYMBOL);
   obj->value.symbol = storage;
   obj->size = len;
   _interned_syms = _cons(obj, _interned_syms);
@@ -163,14 +149,13 @@ OBJECT * make_symbol(const char *symbol) {
 OBJECT * make_string(const char *str, size_t length) {
   OBJECT *obj = _object_malloc(STRING);
   size_t len = strlen(str) + 1;
-  if (length > len) len = length;
-  obj->value.string = GC_MALLOC(len + 1);
+  obj->size = length > len ? length : len;
+  obj->value.string = GC_MALLOC(obj->size);
   memcpy(obj->value.string, str, len);
-  obj->size = len + 1;
   return obj;
 }
 
-/* warning this mutates it's parameter */
+/* warning this mutates the first parameter */
 OBJECT *_append(OBJECT *exp1, OBJECT *exp2) {
   OBJECT *tmp = exp1;
   for( ; _cdr(tmp) != NIL; tmp = _cdr(tmp) )
@@ -180,19 +165,14 @@ OBJECT *_append(OBJECT *exp1, OBJECT *exp2) {
 }
 
 const char * _strcat_alloc(const char *str1, const char *str2) {
-  /* note strlen excludes the NULL trailing byte */
-  size_t len1 = strlen(str1);
-  size_t len2 = strlen(str2);
-  char * str3 = NULL;
-
-  str3 = GC_MALLOC(len1 + len2 + 1);
-
+  size_t len1 = strlen(str1), len2 = strlen(str2);
+  char * str3 = 0;
+  str3 = GC_MALLOC(len1 + len2 + 1); /* strlen exludes the NULL trailing byte */
   memcpy((void *)str3, (void *)str1, len1);
   memcpy((void *) (str3+len1), (void *)str2, len2+1);
- 
   return str3;
 }
 
-OBJECT * string_cat(OBJECT *obj, const char *str) {
-  return make_string( _strcat_alloc(string(obj), str), 0);
+OBJECT * string_cat(OBJECT *obj1, OBJECT *obj2) {
+  return make_string( _strcat_alloc(string(obj1), string(obj2)), 0);
 }

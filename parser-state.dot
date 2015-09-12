@@ -1,0 +1,12 @@
+digraph lisp {
+  start -> atom [label="NUMBER STRING SYMBOL"];
+  start -> push [label="PAIR"];
+  push -> pair;
+  start -> finish [label="NIL"];
+  atom -> finish;
+  pair -> pop [label="NIL"];
+  pop -> finish [label="NIL"];
+  pop -> pair [label="PAIR"];
+  pair -> pair [label="PAIR"];
+  pair -> atom [label="NUMBER STRING SYMBOL"];
+}
