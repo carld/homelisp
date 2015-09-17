@@ -34,6 +34,7 @@ DEFLOGIC(<=,prim_less_than_equals)
 OBJECT * prim_print(OBJECT *exp) {
   return _print(_car(exp));
 }
+
 OBJECT * prim_debug(OBJECT *exp) {
   return debug(_car(exp));
 }
@@ -50,3 +51,8 @@ OBJECT * prim_newline(OBJECT *exp) {
 OBJECT * prim_string_append(OBJECT *exp) {
   return string_cat(_car(exp), _car(_cdr(exp)));
 }
+
+OBJECT * prim_eval(OBJECT *exp) {
+  return _eval(_car(exp), _car(_cdr(exp)));
+}
+
