@@ -8,6 +8,8 @@
  * copyright (C) 2015 A. Carl Douglas
  */
 #include<stdio.h>
+#include<gc.h>
+#include"lisp.h"
 #define ERR(x) printf("%s:%d \n", __FILE__, __LINE__); debug(x);
 
 char * obj_inspector(OBJECT *obj) {
@@ -75,5 +77,4 @@ pop_frame:
   return NIL;
 }
 
-#define debugf(x,m) printf("%s:%d --- %s\n", __FILE__, __LINE__, m); debug(x)
 

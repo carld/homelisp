@@ -1,13 +1,21 @@
 /* read-eval-print-loop
  * copyright (c) 2015 A. Carl Douglas
  */
-#include "expr.c"
-#include "debug.c"
-#include "read.c"
-#include "print.c"
-#include "eval_r.c"
-#include "prims.c"
-#include "load.c"
+#include<stdio.h>
+#include"lisp.h"
+
+OBJECT * prim_print(OBJECT *exp);
+OBJECT * prim_debug(OBJECT *exp);
+OBJECT * prim_read(OBJECT *exp);
+OBJECT * prim_newline(OBJECT *exp);
+OBJECT * prim_string_append(OBJECT *exp);
+OBJECT * prim_add(OBJECT *exp);
+OBJECT * prim_subtract(OBJECT *exp);
+OBJECT * prim_multiply(OBJECT *exp);
+OBJECT * prim_divide(OBJECT *exp);
+OBJECT * prim_eval(OBJECT *exp);
+
+void command_line(int argc, char *argv[], OBJECT *env);
 
 int main(int argc, char *argv[]) {
   OBJECT *environment = NIL;

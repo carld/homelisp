@@ -1,6 +1,8 @@
 /* prints a symbolic expression
  * copyright (c) 2015 A. Carl Douglas
  */
+#include<stdio.h>
+#include"lisp.h"
 OBJECT * _print(OBJECT *exp) {
   char buffer[128];
   OBJECT *expr_stack  = NIL;
@@ -10,7 +12,7 @@ print_object:
   if (exp == NIL) {
     result = string_cat(result, make_string("()",0));
   } else if (object_type(exp) == PAIR) {
-    expr_stack = _cons(exp, expr_stack); /* push onto stack */
+    expr_stack = _cons(exp, expr_stack); /* push onto stack, come back here */
     exp = _car(exp);
     depth++;
     if (depth > ldepth) {

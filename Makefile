@@ -18,19 +18,24 @@ CFLAGS += -O2
 #LDFLAGS += -fprofile-arcs -ftest-coverage
 LDFLAGS += -lgc
 
-all: repl lexer.png parser.png
+SRC	= repl.c expr.c read.c eval_r.c print.c prims.c load.c gc.c debug.c
+OBJ     = $(SRC:.c=.o)
+
+all: obj repl lexer.png parser.png
 	./lisp-tests.sh
 
-repl: repl.c debug.c expr.c read.c eval_r.c print.c prims.c load.c
+obj: $(OBJ)
+
+repl: $(OBJ)
 	wc -l *.c
-	$(CC) -o $@   $(CFLAGS)   repl.c   $(LDFLAGS)
+	$(CC) -o $@   $(CFLAGS)  $^  $(LDFLAGS)
 	size $@
 
 .c.o:
 	$(CC) -c $(CFLAGS) $<
 
 clean:
-	rm -fv *.o *.gcda *.gcno repl
+	rm -fv *.o *.gcda *.gcno repl $(OBJ)
 
 lexer.png: lexer-state.dot
 	dot -Tpng -o $@ $^
@@ -38,5 +43,5 @@ lexer.png: lexer-state.dot
 parser.png: parser-state.dot
 	dot -Tpng -o $@ $^
 
-.PHONY: clean all test
+.PHONY: clean all test obj
 

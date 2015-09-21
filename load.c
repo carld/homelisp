@@ -1,6 +1,9 @@
 /* read and evaluate symbolic expressions from the file 
  * in the provided environment
  */
+#include<stdio.h>
+#include<string.h>
+#include"lisp.h"
 OBJECT * load(OBJECT *filename, OBJECT *environ) {
   OBJECT *port;
   FILE *fp;

@@ -6,6 +6,7 @@
  */
 #include <stdlib.h>
 #include <string.h>
+#include"lisp.h"
 /*  
  * For now using the garbage collector shipped with my Operating System:
  *  man 3 gc
@@ -14,48 +15,11 @@
  */
 #include <gc.h>
 
-enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, POINTER = 5, STRING = 6 };
-typedef struct object OBJECT;
-typedef OBJECT * (*prim_op) (OBJECT *);
-
-struct object {
-  int type;
-  union {
-    const char * symbol;
-    struct { int integer; int fraction; } number;
-    struct { OBJECT * car; OBJECT * cdr; } pair;
-    prim_op primitive;
-    void * ptr;
-    char * string;
-  } value;
-  size_t size; /* for string length etc */
-};
-
 OBJECT _NIL   = { PAIR,   { NULL, NULL } }; 
 OBJECT _TRUE  = { SYMBOL, { "#t" } }; 
 OBJECT _FALSE = { SYMBOL, { "#f" } };
 
-#define NIL     ((OBJECT *) &_NIL) 
-#define TRUE    ((OBJECT *) &_TRUE)
-#define FALSE   ((OBJECT *) &_FALSE)
-
 OBJECT *_interned_syms = NIL;
-
-#define is_nil(x)       (x == NIL)
-#define is_true(x)      (x == TRUE)
-#define is_pair(x)      (x->type == PAIR)
-#define is_atom(x)      (x->type == SYMBOL || x->type == NUMBER)
-#define symbol_name(x)  (x->value.symbol)
-#define integer(x)      (x->value.number.integer)
-#define string(x)       (x->value.string)
-#define pointer(x)      (x->value.ptr)
-#define object_type(x)  (x->type)
-#define _cdr(x)         (x->value.pair.cdr)
-#define _car(x)         (x->value.pair.car)
-#define _rplaca(x,y)    (x->value.pair.car = y)
-#define _rplacd(x,y)    (x->value.pair.cdr = y)
-
-#define _bind(ex,va,en)    _cons(_cons(ex, _cons(va, NIL)), en)
 
 OBJECT * _object_malloc (int type)  { 
   OBJECT *obj = GC_MALLOC(sizeof(OBJECT));
@@ -156,12 +120,15 @@ OBJECT * make_string(const char *str, size_t length) {
 }
 
 /* warning this mutates the first parameter */
-OBJECT *_append(OBJECT *exp1, OBJECT *exp2) {
-  OBJECT *tmp = exp1;
-  for( ; _cdr(tmp) != NIL; tmp = _cdr(tmp) )
-       ;
-  _cdr(tmp) = exp2;
-  return exp1;
+OBJECT * _append(OBJECT *exp1, OBJECT *exp2) {
+  if (exp1 != NIL) {
+    OBJECT *tmp = exp1;
+    for( ; _cdr(tmp) != NIL; tmp = _cdr(tmp) )
+         ; /* walk to end of list */
+    _cdr(tmp) = exp2;
+    return exp1;
+  }
+  return exp2;
 }
 
 const char * _strcat_alloc(const char *str1, const char *str2) {
