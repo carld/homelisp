@@ -7,7 +7,7 @@
 #include <stdlib.h>
 enum { PAIR = 1, NUMBER = 2, SYMBOL = 3, OPERATOR = 4, POINTER = 5, STRING = 6 };
 typedef struct object OBJECT;
-typedef OBJECT * (*prim_op) (OBJECT *);
+typedef OBJECT * (prim_op) (OBJECT *, OBJECT *);
 
 struct object {
   int type;
@@ -15,7 +15,7 @@ struct object {
     const char * symbol;
     struct { int integer; int fraction; } number;
     struct { OBJECT * car; OBJECT * cdr; } pair;
-    prim_op primitive;
+    prim_op * primitive;
     void * ptr;
     char * string;
   } value;
@@ -63,7 +63,7 @@ OBJECT * make_number_i(int integer);
 
 OBJECT * make_number(const char *token);
 
-OBJECT * make_primitive(prim_op pp);
+OBJECT * make_primitive(prim_op *pp);
 
 /* this helps passing around FILE * etc */
 OBJECT * make_pointer(void * ptr);
@@ -79,9 +79,7 @@ OBJECT * make_string(const char *str, size_t length);
 OBJECT *_append(OBJECT *exp1, OBJECT *exp2);
 
 const char * _strcat_alloc(const char *str1, const char *str2);
-
-OBJECT * string_cat(OBJECT *obj1, OBJECT *obj2);
-
+OBJECT *string_cat(OBJECT *, OBJECT *);
 
 OBJECT * _evlis(OBJECT *expr, OBJECT *environ);
 
@@ -89,7 +87,7 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ);
 
 OBJECT * _read(OBJECT *port, int eof_exit);
 
-OBJECT * _print(OBJECT *exp);
+OBJECT * _print(OBJECT *exp, OBJECT *);
 
 OBJECT * debug(OBJECT *exp);
 

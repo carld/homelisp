@@ -6,7 +6,8 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#include"lisp.h"
+#include <dlfcn.h>
+#include "lisp.h"
 /*  
  * For now using the garbage collector shipped with my Operating System:
  *  man 3 gc
@@ -15,7 +16,7 @@
  */
 #include <gc.h>
 
-OBJECT _NIL   = { PAIR,   { NULL, NULL } }; 
+OBJECT _NIL   = { PAIR,   { NULL } }; 
 OBJECT _TRUE  = { SYMBOL, { "#t" } }; 
 OBJECT _FALSE = { SYMBOL, { "#f" } };
 
@@ -38,15 +39,14 @@ OBJECT * _reverse_in_place(OBJECT *expr) {
   OBJECT *tmp, *revexpr = NIL;
   while (expr != NIL) {
     tmp = _cdr(expr);
-    _cdr(expr) = revexpr;
+    _rplacd(expr, revexpr);
     revexpr = expr; 
     expr = tmp;
   }
   return revexpr;
 }
 
-/*
- * (def assoc (x y)
+/* (def assoc (x y)
  *   (cond ((eq (caar y) x) (cadar y))
  *           (true (assoc x (cdr y)))))
  */
@@ -76,9 +76,9 @@ OBJECT * make_number(const char *token) {
   return obj;
 }
 
-OBJECT * make_primitive(prim_op pp) {
+OBJECT * make_primitive(prim_op *pp) {
   OBJECT *obj = _object_malloc(OPERATOR);
-  obj->value.primitive = pp;
+  obj->value.primitive = (OBJECT * (*) (OBJECT *, OBJECT *))pp;
   return obj;
 }
 
@@ -93,7 +93,7 @@ OBJECT * make_symbol(const char *symbol) {
   OBJECT *obj  = _interned_syms;
   size_t len = strlen(symbol) + 1;
   char * storage = 0;
-  for (; obj != NIL; obj = _cdr(obj)) {
+  for ( ; obj != NIL; obj = _cdr(obj)) {
     if (strcmp(symbol, symbol_name(_car(obj))) == 0) {
       return _car(obj);
     }
@@ -125,7 +125,7 @@ OBJECT * _append(OBJECT *exp1, OBJECT *exp2) {
     OBJECT *tmp = exp1;
     for( ; _cdr(tmp) != NIL; tmp = _cdr(tmp) )
          ; /* walk to end of list */
-    _cdr(tmp) = exp2;
+    _rplacd(tmp, exp2);
     return exp1;
   }
   return exp2;
@@ -133,13 +133,12 @@ OBJECT * _append(OBJECT *exp1, OBJECT *exp2) {
 
 const char * _strcat_alloc(const char *str1, const char *str2) {
   size_t len1 = strlen(str1), len2 = strlen(str2);
-  char * str3 = 0;
-  str3 = GC_MALLOC(len1 + len2 + 1); /* strlen exludes the NULL trailing byte */
-  memcpy((void *)str3, (void *)str1, len1);
+  char * str3 = GC_MALLOC(len1 + len2 + 1); /* strlen exludes the NULL trailing byte */
+  memcpy((void *) str3, (void *)str1, len1);
   memcpy((void *) (str3+len1), (void *)str2, len2+1);
   return str3;
 }
 
-OBJECT * string_cat(OBJECT *obj1, OBJECT *obj2) {
-  return make_string( _strcat_alloc(string(obj1), string(obj2)), 0);
+OBJECT * string_cat(OBJECT *args, OBJECT *env) {
+  return make_string( _strcat_alloc(string(_car(args)), string(_car(_cdr(args)))), 0);
 }

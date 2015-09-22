@@ -4,7 +4,7 @@
 #include<stdio.h>
 #include"lisp.h"
 #define DEFMATH(op,name) \
-OBJECT * name (OBJECT *args) { \
+OBJECT * name (OBJECT *args, OBJECT *env) { \
   int result = integer(_car(args)); \
   for ( args = _cdr(args); args != NIL; args = _cdr(args)) \
     result = result op integer(_car(args)); \
@@ -19,7 +19,7 @@ DEFMATH(/,prim_divide)
 #undef DEFMATH
 
 #define DEFLOGIC(op,name) \
-OBJECT * name (OBJECT *args) { \
+OBJECT * name (OBJECT *args, OBJECT *env) { \
   int result = integer(_car(args)) op integer(_car(_cdr(args)));\
   return result == 0 ? FALSE : TRUE; \
 }
@@ -33,29 +33,12 @@ DEFLOGIC(<=,prim_less_than_equals)
 
 #undef DEFLOGIC
 
-/* print needs a wrapper, it only prints it's first parameter */
-OBJECT * prim_print(OBJECT *exp) {
-  return _print(_car(exp));
-}
-
-OBJECT * prim_debug(OBJECT *exp) {
-  return debug(_car(exp));
-}
-
-OBJECT * prim_read(OBJECT *exp) {
+OBJECT * prim_read(OBJECT *exp, OBJECT *env) {
   return _read(_car(exp), 1);
 }
 
-OBJECT * prim_newline(OBJECT *exp) {
+OBJECT * prim_newline(OBJECT *exp, OBJECT *env) {
   printf("\n");
   return NIL;
-}
-
-OBJECT * prim_string_append(OBJECT *exp) {
-  return string_cat(_car(exp), _car(_cdr(exp)));
-}
-
-OBJECT * prim_eval(OBJECT *exp) {
-  return _eval(_car(exp), _car(_cdr(exp)));
 }
 

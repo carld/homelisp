@@ -1,24 +1,18 @@
 /* symbolic expression evaluator
  * needs to implement at least the following to run the LISP by McCarthy:
- *  quote, atom, eq, cons, car, cdr, cond
+ *   quote, atom, eq, cons, car, cdr, cond
  *
  * copyright (C) 2015 A. Carl Douglas
  */
-#include<string.h>
-#include"lisp.h"
-
+#include <string.h>
+#include "lisp.h"
 OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
   if (object_type(expr) == NUMBER) {
     return expr;
   } else if (object_type(expr) == STRING) {
     return expr;
   } else if (object_type(expr) == SYMBOL) {
-    /*  ((atom e) (assoc e a))  */
-    /* this evaluator has built-in true and false, McCarthy's uses nil or not nil
-     */
-    if (strcmp(symbol_name(expr),"#t")==0) return TRUE;
-    else if (strcmp(symbol_name(expr),"#f")==0) return FALSE;
-    return _lookup(expr, environ);
+    return _lookup(expr, environ); /*  ((atom e) (assoc e a))  */
   } else if (object_type(expr) == PAIR) {
     if (expr == NIL) /* NIL is a pair: '() */
       return NIL;
@@ -27,26 +21,17 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
         OBJECT *tmpn = _car(_cdr(_car(expr)));
         OBJECT *tmpv = _cdr(expr);
         OBJECT *closure_env = environ;
-        for ( ; tmpv != NIL && tmpn != NIL; 
-                tmpv = _cdr(tmpv), tmpn = _cdr(tmpn)) {
-          /* note: evaluates the arguments before evaluating the lambda */
-          /* #define _bind(ex,va,en)    _cons(_cons(ex, _cons(va, NIL)), en) */
-
-
-          OBJECT *val = _eval(_car(tmpv), environ); /* REC */
-          closure_env = _bind(_car(tmpn), val, closure_env);
+        for ( ; tmpv != NIL && tmpn != NIL; tmpv = _cdr(tmpv), tmpn = _cdr(tmpn)) {
+          closure_env = _bind(_car(tmpn), _eval(_car(tmpv), environ), closure_env); /* REC */
         }
         return _eval(_car(_cdr(_cdr(_car(expr)))), closure_env); /* REC */
       }
     } else if (strcmp(symbol_name(_car(expr)), "quote")==0) {
-      /* ((eq (car e) (quote quote)) (cadr e)) */
-      return _car(_cdr(expr));
+      return _car(_cdr(expr)); /* ((eq (car e) (quote quote)) (cadr e)) */
     } else if (strcmp(symbol_name(_car(expr)), "atom")==0) {
-      OBJECT *tmp = _eval(_car(_cdr(expr)), environ); /* REC */
-      return is_atom(tmp) ? TRUE : FALSE;      
+      return is_atom( _eval(_car(_cdr(expr)), environ) ) ? TRUE : FALSE;       /* REC */
     } else if (strcmp(symbol_name(_car(expr)), "eq")==0) {
-    /*
-     *  ((eq (car e) 'eq)    (eq     (eval. (cadr e) a)
+    /*  ((eq (car e) 'eq)    (eq     (eval. (cadr e) a)
      *                               (eval. (caddr e) a)))
      */
       OBJECT *o1 = _eval(_car(_cdr(expr)), environ); /* REC */
@@ -57,9 +42,7 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
         return TRUE;
       return FALSE;
     } else if (strcmp(symbol_name(_car(expr)), "car")==0) {
-
       return _car(_eval(_car(_cdr(expr)), environ));  /* REC */
-
     } else if (strcmp(symbol_name(_car(expr)), "cdr")==0) {
       return _cdr(_eval(_car(_cdr(expr)), environ));  /* REC */
     } else if (strcmp(symbol_name(_car(expr)), "cons")==0) {
@@ -68,17 +51,14 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
       return _cons(o1, o2);
     } else if (strcmp(symbol_name(_car(expr)), "cond")==0) {
       /* ((eq (car e) 'cond)  (evcon (cdr e) a))
-       *
        * (def evcon (c a)
        *   (cond ((eval (caar c) a) (eval (cadar c) a))
-       *           ('t (evcon (cdr c) a))))
+       *         ('t (evcon (cdr c) a))))
        */
       OBJECT *tmp ;
       for (tmp = _cdr(expr); tmp != NIL; tmp = _cdr(tmp)) {
         OBJECT *o1 = _eval(_car(_car(tmp)), environ); /* REC */
-        /* an atom (sym or number) is true to be compatible with McCarthy Lisp */
-        if (o1 != NIL && o1 != FALSE) o1 = TRUE;
-        if (o1 == TRUE) {
+        if (o1 != NIL && o1 != FALSE) {  /* any atom (sym or number) is true */
           return _eval(_car(_cdr(_car(tmp))), environ); /* REC */
         }
       }
@@ -90,22 +70,16 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
     } else if (strcmp(symbol_name(_car(expr)), "env")==0) {
       return environ;
     } else if (strcmp(symbol_name(_car(expr)), "lambda")==0) {
-      /* does not evaluate here */
-      return expr;
-    }
-    else  /* apply? */
-    {
+      return expr;  /* function passed by value, does not evaluate here */
+    } else  /* apply */ {
       OBJECT *proc = _eval(_car(expr), environ);  /* REC */
       if (object_type(proc) == OPERATOR) {
         OBJECT *args = _cdr(expr);
         OBJECT *list = NIL;
-        for (  ; args != NIL; args = _cdr(args) ) {
-          OBJECT *tmp = _car(args);
-          tmp = _eval(tmp, environ);  /* REC */
-          list = _cons(tmp, list);
+        for (  ; args != NIL; args = _cdr(args) ) { /* evlist */
+          list = _cons( _eval(_car(args), environ), list); /* REC */
         }
-        args = _reverse_in_place(list);
-        return proc->value.primitive(args);
+        return proc->value.primitive( _reverse_in_place(list), environ );
       } else if (object_type(proc) == PAIR) {
         return _eval( _cons(proc, _cdr(expr)), environ);  /* REC */
       }
@@ -113,4 +87,3 @@ OBJECT * _eval(OBJECT *expr, OBJECT *environ) {
   } /* type == PAIR */
   return NIL; /* this is an error condition */
 }
-

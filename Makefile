@@ -16,7 +16,7 @@ CFLAGS += -O2
 
 #LDFLAGS += -pg
 #LDFLAGS += -fprofile-arcs -ftest-coverage
-LDFLAGS += -lgc
+LDFLAGS += -lgc -ldl
 
 SRC	= repl.c expr.c read.c eval_r.c print.c prims.c load.c gc.c debug.c
 OBJ     = $(SRC:.c=.o)
@@ -27,7 +27,7 @@ all: obj repl lexer.png parser.png
 obj: $(OBJ)
 
 repl: $(OBJ)
-	wc -l *.c
+	wc *.c
 	$(CC) -o $@   $(CFLAGS)  $^  $(LDFLAGS)
 	size $@
 
