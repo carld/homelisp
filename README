@@ -1,4 +1,6 @@
 
+[![Build Status](https://travis-ci.org/carld/homelisp.svg)](https://travis-ci.org/carld/homelisp)
+
 A LisP interpreter to experiment with as an educational exercise.
 
 Implemented in C, attempted to make small and simple, 
