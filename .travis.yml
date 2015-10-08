@@ -1,2 +1,4 @@
 language: c
+before_install:
+  - sudo apt-get install -y libgc-dev
 script: make
