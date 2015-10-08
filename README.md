@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/carld/homelisp.svg?branch=master)](https://travis-ci.org/carld/homelisp)
+[![Build Status](https://travis-ci.org/carld/homelisp.png?branch=master)](https://travis-ci.org/carld/homelisp)
 
 A LisP interpreter to experiment with as an educational exercise.
 
